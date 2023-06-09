@@ -1,0 +1,7 @@
+rm(list = ls())
+getwd()
+setwd("Results")
+library(readr)
+DxResults <- read_csv("DxResults.csv")
+NoIDxResults <- read_csv("DxResults_noirrigation.csv")
+View(DxResults)
