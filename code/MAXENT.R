@@ -8,7 +8,7 @@ library(rgdal)
 library(maps)
 library(mapdata)
 library(dismo)  
-#library(rJava)  
+library(rJava)  
 library(maptools)
 library(jsonlite)
 
@@ -33,8 +33,8 @@ Aflavus=subset(Aflavus, !is.na(lon) & !is.na(lat))
 Aflavusdups = duplicated(Aflavus[, c("lon", "lat")])
 Aflavus <-Aflavus[!Aflavusdups, ]
 
-#make initial plot for diagnostic purposes
-plot(wrld_simpl, xlim=c(min(Aflavus$lon)-1,max(Aflavus$lon)+1),ylim=c(min(Aflavus$lat)-1, max(Aflavus$lat)+1), axes=TRUE, col="light yellow")
+#make initial plot for diagnostic purposes, check this later
+#plot(wrld_simpl, xlim=c(min(Aflavus$lon)-1,max(Aflavus$lon)+1),ylim=c(min(Aflavus$lat)-1, max(Aflavus$lat)+1), axes=TRUE, col="light yellow")
 
 ####SMD####
 
@@ -96,4 +96,3 @@ abline(v=0, col="red")
 AflavusMitChangePoints = extract(Aflavus.mit.change, Aflavusocc)
 hist(AflavusChangePoints, main="", x)
 abline(v=0, col="red")
-

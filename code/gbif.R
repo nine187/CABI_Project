@@ -8,7 +8,7 @@ library(tmap)
 library(usethis)
 #mapping coordinate system 
 library(sf)
-
+library(rgdal)
 #search for aspergillus flavus 
 #occ_search(scientificName = "Aspergillus flavus")
 #occ_data(scientificName = "Aspergillus flavus")
@@ -51,6 +51,8 @@ d <- d[!is.na(d$decimalLatitude) & !is.na(d$decimalLongitude), ]
 
 #convert the dataframe into an sf object which can be used by tmap
 d<- st_as_sf(d, coords = c("decimalLongitude", "decimalLatitude"), crs = 4326)
+
+#####################################MAPPING###################################
 
 #change the mode to plotting
 tmap_mode("plot")

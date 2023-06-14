@@ -7,6 +7,7 @@ library(SSDM)
 library(raster)
 #rgdal is for similar purposes as raster
 library(rgdal)
+library(tmap)
 
 #load the climate data from bioclim
 home <- "/home/nine187/Documents/Aflatoxin_project/data/"
@@ -52,5 +53,3 @@ plot(ANN)
 #SVM
 SVM <- modelling('SVM', subset(OCC, OCC$species == 'Aspergillus flavus'), pred, Xcol = 'decimalLatitude', Ycol = 'decimalLongitude')
 plot(SVM)
-
-
