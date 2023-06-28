@@ -7,23 +7,20 @@ library(SSDM)
 library(raster)
 #rgdal is for similar purposes as raster
 library(rgdal)
-library(tmap)
+#mapping package
+#library(tmap)
 
-#load the climate data from bioclim
-home <- "/home/nine187/Documents/Aflatoxin_project/data/"
-climate <- paste0(home, "wc2.1_10m_bio/")
-occ <- paste0(home, "occ/")
+#load the predictor variables
+pred <- load_var(path="Documents/CABI_Project/data/wc2.1_10m_bio/")
 
-pred <- load_var(path=climate)
 # Initialize plot window
-dev.new()
-
-plot(pred)
+#plot(pred)
 
 #load the species data
-OCC <- load_occ(path=home, pred, Xcol = 'decimalLatitude', Ycol = 'decimalLongitude', Spcol = 'species',
-                file = 'gbif_a.flavus.csv', sep = ',')
-#error check later
+OCC <- load_occ(path="Documents/CABI_Project/data/", pred, 
+                Xcol = 'decimalLatitude', Ycol = 'decimalLongitude',
+                Spcol = 'species', file = 'gbif_occurrence.csv', sep = ',')
+#some occurrences are removed, check why
 
 #load additional data
 #borders <- raster::getData("GADM", country="Pakistan",level=0)

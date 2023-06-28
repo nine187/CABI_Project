@@ -1,3 +1,5 @@
+#https://cmerow.github.io/RDataScience/3_6_Teaching_Ecoinformatics.html
+
 rm(list=ls())
 graphics.off()
 
@@ -63,17 +65,19 @@ Aflavus.pred <- predict(Aflavus.me, modelEnv)
 
 #plot predictions
 plot(Aflavus.pred, main="Predicted Suitability")
-map('worldHires', fill=FALSE, add=TRUE)
+#map
+#map('worldHires', fill=FALSE, add=TRUE)
 points(Aflavus$lon, Aflavus$lat, pch="+", cex=0.2)
 
 # make predictions with the future environment data
 Aflavus.2070 = predict(Aflavus.me, modelFutureEnv)
-Aflavus.mitigated = predict(Aflavus.me, modelMitigatedEnv)
+#used to be model Mitigated change
+Aflavus.mitigated = predict(Aflavus.me, modelFutureEnv)
 
 #plot predictions
 plot(Aflavus.2070, main="Predicted Future Suitability")
 map('worldHires', fill=FALSE, add=TRUE)
-points(Aflavus$lon, Aflavus$lat, pch="+", cex=0.2)
+points(Aflavus$lon, Aflavus$lat, pch="+", cex=0.5)
 
 Aflavus.change=Aflavus.2070-Aflavus.pred
 Aflavus.mit.change=Aflavus.mitigated-Aflavus.pred
@@ -86,7 +90,7 @@ points(Aflavus$lon, Aflavus$lat, pch="+", cex=0.2)
 bg <- randomPoints(modelEnv, 1000) #background "pseudoabsences"
 
 #simplest way to use 'evaluate'
-e1 <- evaluate(Aflavus.me, p=occtest, a=bg, x=modelEnv)
+e1 <- evaluate(Aflavus.me, p=Aflavustest, a=bg, x=modelEnv)
 
 plot(e1, 'ROC')
 AflavusChangePoints = extract(Aflavus.change, Aflavusocc)
