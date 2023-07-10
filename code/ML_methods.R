@@ -8,45 +8,59 @@ library(raster)
 #rgdal is for similar purposes as raster
 library(rgdal)
 #mapping package
-#library(tmap)
+library(tmap)
+library(randomForest)
 
 #load the predictor variables
-pred <- load_var(path="Documents/CABI_Project/data/wc2.1_10m_bio/")
+pred <- load_var(path="GitHub/CABI_Project/data/wc2.1_10m_bio/",
+                 categorical = NULL, format = ".tif", Norm = TRUE, verbose = TRUE,GUI = FALSE)
+plot(pred)
 
-# Initialize plot window
-#plot(pred)
+#load the species data, lat and long??
+occ <- load_occ(path="GitHub/CABI_Project/data/",Env = pred,
+                Xcol = 'decimalLongitude', Ycol = 'decimalLatitude', Spcol ='species',
+                file = 'gbif_occurrence.csv',header = TRUE,sep = ",", dec = ".", 
+                GeoRes = FALSE, verbose = TRUE)
 
-#load the species data
-OCC <- load_occ(path="Documents/CABI_Project/data/", pred, 
-                Xcol = 'decimalLatitude', Ycol = 'decimalLongitude',
-                Spcol = 'species', file = 'gbif_occurrence.csv', sep = ',')
-#some occurrences are removed, check why
+#Spatial Thinning, should geo reso be turned off ?
 
 #load additional data
 #borders <- raster::getData("GADM", country="Pakistan",level=0)
 
 #Model the species
-SDM <- modelling('RF', subset(OCC, OCC$species == 'Aspergillus flavus'), pred, Xcol = 'decimalLatitude', Ycol = 'decimalLongitude')
-str(SDM)
+#SDM <- modelling('RF', subset(OCC, OCC$species == 'Aspergillus flavus'), pred, 
+                # Xcol = 'decimalLatitude', Ycol = 'decimalLongitude')
+
+SDM <- modelling('RF', Occurrences = occ, Env = pred, 
+                 Xcol = 'decimalLongitude', Ycol = 'decimalLatitude', trees = 10000,
+                 verbose = TRUE)
+#str(SDM)
 plot(SDM)
 plot(SDM@projection)
+plot(SDM@binary)
 SDM@evaluation
 SDM@variable.importance
 
 #GLM
-GLM <- modelling('GLM', subset(OCC, OCC$species == 'Aspergillus flavus'), pred, Xcol = 'decimalLatitude', Ycol = 'decimalLongitude')
+GLM <- modelling('GLM', occ, pred, 
+                 Xcol = 'decimalLongitude', Ycol = 'decimalLatitude')
 str(GLM)
 plot (GLM)
-
+plot (GLM@projection)
 #MAXENT
-MAXENT <- modelling('MAXENT', subset(OCC, OCC$species == 'Aspergillus flavus'), pred, Xcol = 'decimalLatitude', Ycol = 'decimalLongitude')
+MAXENT <- modelling('MAXENT', occ, pred, 
+                    Xcol = 'decimalLongitude', Ycol = 'decimalLatitude')
 str(MAXENT)
 plot(MAXENT)
 
 #Artificial Neural Network
-ANN <- modelling('ANN', subset(OCC, OCC$species == 'Aspergillus flavus'), pred, Xcol = 'decimalLatitude', Ycol = 'decimalLongitude')
+ANN <-  modelling('ANN', occ, pred, 
+                  Xcol = 'decimalLongitude', Ycol = 'decimalLatitude')
 plot(ANN)
+plot(ANN@projection)
 
 #SVM
-SVM <- modelling('SVM', subset(OCC, OCC$species == 'Aspergillus flavus'), pred, Xcol = 'decimalLatitude', Ycol = 'decimalLongitude')
+SVM <-modelling('SVM', occ, pred, 
+                Xcol = 'decimalLongitude', Ycol = 'decimalLatitude')
 plot(SVM)
+plot(SVM@projection)

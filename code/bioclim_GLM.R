@@ -70,7 +70,7 @@ pseudo_dismo <- randomPoints(mask=as(bioclim_hist, 'Raster'), n=n_pseudo)
 # Convert this data into an sf object, for consistency with the
 # next example.
 pseudo_dismo <- st_as_sf(data.frame(pseudo_dismo), coords=c('x','y'), crs=32718)
-st_crs(pseudo_dismo) <- 4326
+st_transform(pseudo_dismo)
 
 # Create buffers around the observed points
 #check what the nearby and too_close are again
@@ -210,7 +210,9 @@ abline(v=max_kappa, lty=2, col='blue')
 par(mfrow=c(2,2))
 
 # Modelled probability
-plot(glm_pred, col=hcl.colors(20, 'Blue-Red'))
+GLM <- plot(glm_pred, col=hcl.colors(20, 'Blue-Red'))
+#save the current distribution as .tif file
+writeRaster(glm_map, filename = "data/GLM.tif", format = "GTiff")
 
 # Threshold map
 glm_map <- glm_pred >= max_kappa

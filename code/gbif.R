@@ -163,3 +163,4 @@ gbif_sf <-st_as_sf(gbif_spdf)
 #save the output file
 output_file <- "gbif.shp"
 st_write(gbif_sf, output_file)
+write.csv(gbif_coords, file = "gbif_coordinates.csv")
