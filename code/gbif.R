@@ -8,7 +8,6 @@ library(tmap)
 library(usethis)
 #mapping coordinate system 
 library(sf)
-#library(rgdal)
 #cleaning gbif dataframe
 library(CoordinateCleaner)
 

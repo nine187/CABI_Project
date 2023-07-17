@@ -1,0 +1,163 @@
+---
+title: "CLIMEX_CLY"
+author: "Anna Szyniszewska"
+date: "2023-06-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r, echo=FALSE, results=FALSE, warning=FALSE, message=FALSE, output = FALSE}
+options(digits = 6) 
+# Install libraries:
+library(raster)
+library(dplyr)
+library(tmap)
+library(tmaptools)
+library(sf)
+library(RColorBrewer)
+library(maptools)
+library(viridis)
+library(grid)
+library(gridExtra)
+library(ggplot2)
+# Get file of interest
+
+Path <- "insert path"
+
+
+# Range of years
+years <- 2000:2019
+years_l <- length(years)
+```
+
+
+```{r ffipm, echo = FALSE, comment=FALSE, message = FALSE, warning = FALSE}
+library(remotes)
+remotes::install_github("aniaszy/ffipm")
+library(ffipm)
+```
+
+Climex run with parameter set `Params`
+
+```{r, echo = FALSE, comment=FALSE}
+Params <- 20 # Climex parameters for Cc
+```
+
+```{r, echo = FALSE}
+Continent <- "World"
+FF <- "Cc"
+
+# Get the working Netcdf file with and without irrigation
+input_file <- paste0(Path,FF,"_Params",Params,"_Irr_",Continent,"_",min(years),"_",max(years),"_YearlySnapshot.nc")
+input_file.noirr <- paste0(Path,FF,"_Params",Params,"_NoIrr_",Continent,"_",min(years),"_",max(years),"_YearlySnapshot.nc")
+
+### Convert it to a composite map
+
+# Load the irrigation layer:
+
+Irr.r <- raster("CM30_1995H_V2_gmia_v5_aei_h_classified10ha.tif")
+```
+Variable of interest in this document: `dname`
+```{r variable2, comment=FALSE}
+# Choose variable of interest
+dname <- "EI"
+dname <- c("EI","TI","MI","CS","HS","DS","WS","GI")
+```
+
+```{r, echo = FALSE, echo=FALSE, warning = FALSE, error=FALSE}
+# Create a list with variables matrix for each year
+AllYears <- vector(mode = "list", length = length(dname))
+AllYears.noirr <- vector(mode = "list", length = length(dname))
+for (i in 1:length(dname)){
+  AllYears[[i]] <- ffipm::extract_data_list(input_file,dname = dname[i],years = years, step = "Year")
+  AllYears.noirr[[i]] <- ffipm::extract_data_list(input_file.noirr,dname = dname[i],years = years, step = "Year")
+}
+
+
+AllYears_r <- vector(mode = "list", length = length(dname))
+AllYears_r_noirr <- vector(mode = "list", length = length(dname))
+  
+for (i in 1:length(dname)){
+  AllYears_r[[i]] <- ffipm::create_raster_stack(AllYears[[i]],years = years, step = "Year")
+  AllYears_r_noirr[[i]] <- ffipm::create_raster_stack(AllYears.noirr[[i]],years = years, step = "Year")
+}
+
+# https://matinbrandt.wordpress.com/2013/11/15/pixel-wise-time-series-trend-anaylsis-with-ndvi-climex-and-r/
+
+# As a rule, remove the first year, as results are dubious:
+for (i in 1:length(dname)){
+    AllYears[[i]] <- AllYears[[i]][-c(1)]
+    AllYears_r[[i]] <- AllYears_r[[i]][[-c(1)]]
+
+    AllYears.noirr[[i]] <- AllYears.noirr[[i]][-c(1)]
+    AllYears_r_noirr[[i]] <- AllYears_r_noirr[[i]][[-c(1)]]
+}
+
+# Correct year range:
+years <- years[-c(1)]
+years_l <- length(years)
+
+
+```
+#### Range of years
+```{r years}
+range(years)
+
+```
+
+```{r, echo = FALSE, comment = FALSE, warning = FALSE, error=FALSE}
+
+fun1 <- function(x) { 
+    climex.ts = ts(x, start=c(min(years)+1), end=c(max(years)), frequency=1)
+    x <- aggregate(climex.ts) 
+}
+
+climex.sum <- vector(mode = "list", length = length(dname))
+climex.sum.noirr <- vector(mode = "list", length = length(dname))
+
+for (i in 1:length(dname)){
+   climex.sum[[i]] <- calc(AllYears_r[[i]], fun1)
+   climex.sum.noirr[[i]] <- calc(AllYears_r_noirr[[i]], fun1) 
+}
+#climex.sum
+```
+```{r, rasterstack1, echo=FALSE, comment = FALSE, warning = FALSE, error=FALSE}
+plot(climex.sum[[1]][[45:48]])
+plot(climex.sum.noirr[[1]][[45:48]])
+```
+
+```{r, rasterstack2, echo=FALSE}
+#plot(climex.sum[[17:32]])
+```
+```{r, rasterstack3, echo=FALSE}
+# plot(climex.sum[[33:48]])
+# plot(climex.sum.noirr[[33:48]])
+```
+```{r,echo=FALSE, results=FALSE, warning=FALSE, message=FALSE}
+# Create a composite raster
+plot(Irr.r, main = "FAO Irrigation layer")
+# Crop irrigation layer: 
+Irr.r.c <- crop(x = Irr.r, y = climex.sum[[1]])
+composite.fun <- function(Irr, Ri, Rn){
+    Irr2 <- Irr+1
+    Irr2 <- reclassify(Irr2, cbind(2, 0))
+    Irr.l <- list(Irr,Irr2)
+    Final <- Ri*Irr.l[[1]]+Rn*Irr.l[[2]]
+    return(Final)
+}
+
+
+composite.stack <- vector(mode = "list", length = length(dname))
+AllYears.composite <- vector(mode = "list", length = length(dname))
+
+
+for (i in 1:length(dname)){
+    composite.stack[[i]] <- composite.fun(Irr.r.c, climex.sum[[i]], climex.sum.noirr[[i]])
+    AllYears.composite[[i]] <- composite.fun(Irr.r.c, AllYears_r[[i]], AllYears_r_noirr[[i]])
+}
+
+
+```
+
