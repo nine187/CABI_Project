@@ -30,37 +30,38 @@ library(devtools)
 library(rmapshaper) 
 
 #alternative package to read the NetCDF files
-#library(ncdf4)
+library(ncdf4)
 
-#read the csv files 
-maize_70 <- read.csv("GitHub/CABI_Project/data/1970_maize.csv")
-#import the data from FAOSTAT maize cultivation by country estimation 
-#1970 data (test data)
-allyear_maize <- read.csv("GitHub/CABI_Project/data/FAOSTAT_data_en_7-12-2023(3).csv")
-
+#source the functions
+source("GitHub/CABI_Project/code/function.R")
 #define the path for the files
 path <- "C:/Users/Pasith/Documents/Dymex/Aflatoxin/"
 #1970-2019 (fifty years) annual data irrigation and no irrigation
 mod_irr_allyear <- paste0(path, "NetCDF/A.flavus_modified-param-file_Irr_Annual_1970-2019.nc")
 mod_noirr_allyear <- paste0(path, "NetCDF/A.flavus_modified-param-file_NoIrr_Annual_1970-2019.nc")
+
+#modify annual parameter
 mod_irr_annual <- paste0(path, "NetCDF/A.flavus_CM30_1995H_V2_modified-param-file_Irr_Annual.nc")
-mod_irr_week <- paste0(path, "NetCDF/A.flavus_CM30_1995H_V2_modified-param-file_Irr_Weekly.nc")
 mod_noirr_annual <- paste0(path, "NetCDF/A.flavus_CM30_1995H_V2_modified-param-file_NoIrr_Annual.nc")
+
+#modify weekly parameter
+mod_irr_week <- paste0(path, "NetCDF/A.flavus_CM30_1995H_V2_modified-param-file_Irr_Weekly.nc")
 mod_noirr_week <- paste0(path, "NetCDF/A.flavus_CM30_1995H_V2_modified-param-file_NoIrr_Weekly.nc")
+
+#original parameters
 og_irr_annual <- paste0(path,"NetCDF/A.flavus_CM30_1995H_V2_orig-param-file_Irr_Annual.nc" )
 og_irr_weekly <- paste0(path, "NetCDF/A.flavus_CM30_1995H_V2_orig-param-file_Irr_Weekly.nc")
 og_noirr_annual <- paste0(path, "NetCDF/A.flavus_CM30_1995H_V2_orig-param-file_NoIrr_Annual.nc")
 og_noirr_weekly <- paste0(path, "NetCDF/A.flavus_CM30_1995H_V2_orig-param-file_NoIrr_Weekly.nc")
+
+#irrigation mask
 irr_mask <- paste0(path,"NetCDF/CM30_1995H_V2_gmia_v5_aei_h_classified10ha.tif")
 
 #extract the data from the NetCDF file using the extract_data_list function
 
-# Example variables to loop through
-#var <- c("WS", "HS", "CS", "DS", "EI", "GI")
-
 ###EI###
 #extract data list for EI
-mod_irr_allyear_EI <- extract_data_list(mod_noirr_week,"EI",
+mod_irr_allyear_EI <- extract_data_list(mod_irr_allyear,"EI", years = 1970:2019,
                                         step = "Year")
 
 mod_noirr_allyear_EI <- extract_data_list(mod_noirr_allyear,"EI", years = 1970:2019,
@@ -122,7 +123,7 @@ for (i in 1:length(mod_noirr_allyear_CS_raster)) {
   layer <- mod_noirr_allyear_CS_raster[[i]]
   year <- names(mod_noirr_allyear_CS_raster)[i]
   title <- paste("CS_noirr", year)
-  plot(layer, main = title,zlim =c(-100,0))
+  plot(layer, main = title,zlim =c(0,999))
   png(filename = paste0("map_", year, ".png"))
   dev.off()
 }
@@ -140,7 +141,7 @@ for (i in 1:length(mod_irr_allyear_WS_raster)) {
   layer <- mod_irr_allyear_WS_raster[[i]]
   year <- names(mod_irr_allyear_WS_raster)[i]
   title <- paste("WS_irr", year)
-  plot(layer, main = title,zlim =c(0,320))
+  plot(layer, main = title,zlim =c(0,10))
   png(filename = paste0("map_", year, ".png"))
   dev.off()
 }
@@ -148,7 +149,7 @@ for (i in 1:length(mod_noirr_allyear_WS_raster)) {
   layer <- mod_noirr_allyear_WS_raster[[i]]
   year <- names(mod_noirr_allyear_WS_raster)[i]
   title <- paste("WS_noirr", year)
-  plot(layer, main = title,zlim =c(0,320))
+  plot(layer, main = title,zlim =c(0,10))
   png(filename = paste0("map_", year, ".png"))
   dev.off()
 }
@@ -166,7 +167,7 @@ for (i in 1:length(mod_irr_allyear_HS_raster)) {
   layer <- mod_irr_allyear_HS_raster[[i]]
   year <- names(mod_irr_allyear_HS_raster)[i]
   title <- paste("HS_irr", year)
-  plot(layer, main = title,zlim =c(0,100))
+  plot(layer, main = title,zlim =c(0,10))
   png(filename = paste0("map_", year, ".png"))
   dev.off()
 }
@@ -174,7 +175,7 @@ for (i in 1:length(mod_noirr_allyear_HS_raster)) {
   layer <- mod_noirr_allyear_HS_raster[[i]]
   year <- names(mod_noirr_allyear_HS_raster)[i]
   title <- paste("CS_noirr", year)
-  plot(layer, main = title,zlim =c(0,100))
+  plot(layer, main = title,zlim =c(0,10))
   png(filename = paste0("map_", year, ".png"))
   dev.off()
 }
@@ -191,7 +192,7 @@ for (i in 1:length(mod_irr_allyear_DS_raster)) {
   layer <- mod_irr_allyear_DS_raster[[i]]
   year <- names(mod_irr_allyear_DS_raster)[i]
   title <- paste("DS_irr", year)
-  plot(layer, main = title,zlim =c(0,100))
+  plot(layer, main = title,zlim =c(0,10))
   png(filename = paste0("map_", year, ".png"))
   dev.off()
 }
@@ -199,7 +200,7 @@ for (i in 1:length(mod_noirr_allyear_DS_raster)) {
   layer <- mod_noirr_allyear_DS_raster[[i]]
   year <- names(mod_noirr_allyear_DS_raster)[i]
   title <- paste("DS_noirr", year)
-  plot(layer, main = title,zlim =c(0,100))
+  plot(layer, main = title,zlim =c(0,10))
   png(filename = paste0("map_", year, ".png"))
   dev.off()
 }
@@ -229,162 +230,240 @@ for (i in 1:length(mod_noirr_allyear_GI_raster)) {
   dev.off()
 }
 
-##########2.link the map to maize cultivation##########
+###################Creating Composite Map######################################
 
-#look at the maize yield dataset from FAO in 1970
-summary(maize_70)
-View(maize_70)
+#define the variables
+dname <- c("WS", "TI", "MI", "HS", "GI", "EI", "DS", "DD", "CS", 
+           "Core Distribution", "Gen.")
+#choose which variable we want to extract
+k <- 6
 
-#plot the data on the world map
-list(unique(maize_70$Area))
-data(World)
-list(unique(World$name))
+#use nc_open to the dataset
+year_irr <- nc_open(mod_irr_annual)
+year_noirr <- nc_open(mod_noirr_annual)
 
-#remove unnecessary columns
+#use the custom function get_nc to get the datset 
+year_irr_get <- get_nc(year_irr, dname[k])
+year_noirr_get <- get_nc(year_noirr, dname[k])
 
-# name the columns that I want to keep in the dataset
-desired_columns <- c("iso_a3", "name", "geometry")
+plot(year_irr_get[[1]])
 
-# identify the columns that are not included in above
-columns_to_remove <- setdiff(colnames(World), desired_columns)
+# Crop irrigation layer: 
+year_irr_crop <- crop(x = year_irr_get, y = year_noirr_get)
 
-# Remove the unwanted columns
-World <- World[, !(colnames(World) %in% columns_to_remove)]
+#create a composite map
+r_composite <- composite.fun(year_irr_crop, year_irr_get, year_noirr_get)
 
-#match the FAOSTAT data to the country
-#add a trial data for 1970 FAOSTAT maize
+plot(r_composite)
 
-#remove unnecessary columns
+#use tmap to map the composite map
 
-desired_columns <- c("Area", "Year", "Year.code", "unit", "Value")
-columns_to_remove <- setdiff(colnames(maize_70), desired_columns)
-maize_70 <- maize_70[, !(colnames(maize_70) %in% columns_to_remove)]
-head(maize_70)
+#read countries shape
+World <- rnaturalearth::ne_countries(scale = 10, continent = NULL, returnclass = "sf", type = "countries")
+World <- rmapshaper::ms_simplify(World, keep = 0.1, keep_shapes = TRUE)
+box <- c(-169, -55, 194, 78)
+box_sp <- as(extent(box[1],box[3],box[2],box[4]), 'SpatialPolygons')
+crs(box_sp) <- "+proj=longlat +datum=WGS84 +no_defs"
 
-data(World)
-# Merge the datasets based on matching values in "Area" and "name" columns
-#all.y = TRUE is set so that all the matching column w/o Value won't be erased
-World <- merge(maize_70, World, by.x = "Area", by.y = "name", all.y = TRUE)
-head(World)
+max(values(r_composite), na.rm = T)
+#crop raster
+r_composite_cropped = crop(r_composite, box_sp)
+plot(r_composite_cropped)
+r_Irr_cropped = crop(year_irr_get, box_sp)
+r_NoIrr_cropped = crop(year_noirr_get, box_sp) 
 
-######some countries names didn't match, fix this later
+#crop polygon
+World_without_antarctica <- World %>% dplyr::filter(sovereignt != "Antarctica")
+#plot(World_without_antarctica)
 
-#convert World back to sf dataframe class so tmap can read the file
-World_sf <- st_as_sf(World, sf_column_name = "geometry")
-#convert World_sf to raster
-World_raster <- raster(World_sf)
-plot(World_raster)
+cuts_mean=c(0,seq(1,100,1)) # EI
+cuts_l_mean <- length(cuts_mean)
+cols_brown_yellow_mean <- c("grey", colorRampPalette(c("lightyellow","yellow",
+                          "orange","red" ,"red3"))(cuts_l_mean-1))
 
-#plot the thing in tmap
-tmap_mode("plot")
-map <- tm_shape(World_sf) +
-  tm_polygons("Value") 
+map_robin <- tm_shape(st_geometry(World_without_antarctica), projection="+proj=longlat") +
+  tm_fill(col = "grey") +
+  tm_shape(r_composite_cropped,raster.warp =  FALSE, projection="+proj=longlat") +
+  tm_raster(style = 'cont', palette =  cols_brown_yellow_mean,
+            legend.show = TRUE, title = "EI",  breaks = c(seq(0,100,5)), alpha = 0.8) +
+  tm_layout(main.title.position = "left",
+            main.title.size = 0.9, 
+            earth.boundary = FALSE,
+            bg.color = "white",
+            space.color="white",
+            legend.title.size=1,                  
+            legend.text.size = 0.8, 
+            fontface="bold",#0.6 or 0.7
+            frame = FALSE) +
+  tm_legend(position = c("left", "bottom"))
+
+library(leaflet)
+
+pal <- colorNumeric(c("grey","lightyellow","yellow","orange","red" ,"red3"), c(0,seq(1,100,1)),
+                    na.color = "transparent")
+
+leaflet() %>% addTiles() %>%
+  addRasterImage(r_composite_cropped, colors = cols_brown_yellow_mean, opacity = 0.8) 
+
+#leaflet map
 
 tmap_mode("view")
-map
+map_robin
 
-plot(mod_irr_allyear_EI_raster$X1970)
+###weekly data###
+week_irr <- nc_open(mod_irr_week)
+week_noirr <- nc_open(mod_noirr_week)
 
-#test by converting the raster for 1970 
-raster_irr_70 <- mod_irr_allyear_EI_raster$X1970
-plot(raster_70)
-raster_noirr_70 <- mod_noirr_allyear_EI_raster$X1970
-plot(raster_noirr_70)
+#use the custom function get_nc to get the datset 
+year_irr_get <- get_nc(week_irr, dname[k])
+year_noirr_get <- get_nc(week_noirr, dname[k])
 
-#merge the corn map with the irrigation map from before
-merged_map <- merge(raster_irr_70, raster_noirr_70, by = "common_id")
-plot(merged_map)
-
-
-#test by doing a regression analysis on both irr and no irr
-class(raster_irr_70)
-class(raster_noirr_70)
-class(World_raster)
-
-#extract the values from the raster files
-values1 <- getValues(raster_irr_70)
-values2 <- getValues(raster_noirr_70)
-values3 <- getValues(World_raster)
-
-#creates a new dataframe from the values
-data <- data.frame(values2, values3)
-model <- lm(values1 ~ values3, data = data)
-summary(model)
-plot(model, pch = 1)
-
-#create a regression map from the merged data
-#model <- lm(raster_irr_70 ~ raster_noirr_70, data = merged_map)
-
-#3. Classify the suitability with certain threshold
-
-#4. Try to run the parameters file in future climate
-#load the aflatoxin distribution map for maize
-
-###############################SANDBOX##########################################
-
-###codes that might be useful later###
-#explore the irrigation mask data
-mask <- raster(irr_mask)
-print(mask)
-plot(mask)
-summary(mask, forceapply = TRUE)
-
-#create a composite raster of irri and noirri maps
-composite_raster <- create_composite_raster(file1 = mod_irr_allyear,
-                                            file2 = mod_noirr_allyear,
-                                            mask = mask,
-                                            years_input_file = 1970:2019,
-                                            years_raster_stack = 1970:2019,
-                                            dname = "EI")
-
-#load the raster file to modify the variable name
-#raster_mask <- raster(raster_file)
-#plot(raster_mask)
-
-#cant find EI, going to use regular nc package to explore the file
-nc_file <- nc_open(mod_irr_annual)
-head(nc_file)
-variables <- names(nc_file$var)
-variables
-
-#tmap version of the loop
-  # Create a new tmap plot for each iteration
-  tm_map <- tm_shape(World) +
-    tm_raster(mod_noirr_allyear_EI_raster$X1970)+
-    tm_dots(col = "blue", palette = "Set1", title = "City") +
-    tm_basemap("OpenStreetMap") +
-    tm_layout(bg.color = "white", inner.margins = c(0, .02, .02, .02))+
-    tm_layout(legend.position = c("left", "bottom"))+
-
-  # Save the tmap plot as a PNG file
-tmap_mode("view")
-tm_map
+########FITTING LINEAR TRENDS##########################
 
 # Create a raster stack for your time-series data for the analysis of the linear trend 
+time <- 1:nlayers(mod_irr_allyear_EI_raster[[1]])  
 
-time <- 1:nlayers(composite.stack[[1]])  
-
-fun2 = function(x) { if (is.na(x[1])){ NA } else { m = lm(x ~ time); summary(m)$coefficients[2] }} 
+#function for calculating linear trend in the time series data
+fun2 = function(x) { if (is.na(x[1])){ NA } 
+  else { m = lm(x ~ time); summary(m)$coefficients[2] }} 
 
 climex.slope <- vector(mode = "list", length=length(dname)) 
 
 for (i in 1:length(dname)){ 
   
-  climex.slope[[i]] <- calc(composite.stack[[i]], fun2) 
+  climex.slope[[i]] <- calc(mod_irr_allyear_EI_raster[[i]], fun2) 
   
 } 
 
-#tmap
+#####################################################################
 
-World <- rnaturalearth::ne_countries(scale = 10, continent = NULL, returnclass = "sf", type ="countries") 
+#preallocate a list for the data in each year and week
+AllYears <- vector(mode = "list", length = length(dname))
+AllYears.noirr <- vector(mode = "list", length = length(dname))
 
+#loop the yearly data
+for (i in 1:length(dname)){
+  AllYears[[i]] <- ffipm::extract_data_list(mod_irr_annual,dname = dname[i],years = years, step = "Year")
+  AllYears.noirr[[i]] <- ffipm::extract_data_list(mod_noirr_annual, dname = dname[i],years = years, step = "Year")
+}
+
+AllYears_r <- vector(mode = "list", length = length(dname))
+AllYears_r_noirr <- vector(mode = "list", length = length(dname))
+
+for (i in 1:length(dname)){
+  AllYears_r[[i]] <- ffipm::create_raster_stack(AllYears[[i]],years = years, step = "Year")
+  AllYears_r_noirr[[i]] <- ffipm::create_raster_stack(AllYears.noirr[[i]],years = years, step = "Year")
+}
+
+# As a rule, remove the first year, as results are dubious:
+for (i in 1:length(dname)){
+  AllYears[[i]] <- AllYears[[i]][-c(1)]
+  AllYears_r[[i]] <- AllYears_r[[i]][[-c(1)]]
+  
+  AllYears.noirr[[i]] <- AllYears.noirr[[i]][-c(1)]
+  AllYears_r_noirr[[i]] <- AllYears_r_noirr[[i]][[-c(1)]]
+}
+
+years <- years[-c(1)]
+years_l <- length(years)
+
+fun1 <- function(x) { 
+  climex.ts = ts(x, start=c(min(years)+1), end=c(max(years)), frequency=1)
+  x <- aggregate(climex.ts) 
+}
+
+climex.sum <- vector(mode = "list", length = length(dname))
+climex.sum.noirr <- vector(mode = "list", length = length(dname))
+
+for (i in 1:length(dname)){
+  climex.sum[[i]] <- calc(AllYears_r[[i]], fun1)
+  climex.sum.noirr[[i]] <- calc(AllYears_r_noirr[[i]], fun1) 
+}
+
+plot(climex.sum[[1]][[45:48]])
+plot(climex.sum.noirr[[1]][[40:43]])
+
+#create a composite layer
+plot(irr_mask, main = "FAO Irrigation layer")
+irr_r_c <- crop(x = irr_mask, y = climex.sum[[1]])
+
+plot(irr_r_c)
+
+composite.stack <- vector(mode = "list", length = length(dname))
+AllYears.composite <- vector(mode = "list", length = length(dname))
+
+for (i in 1:length(dname)){
+  composite.stack[[i]] <- composite.fun(irr_r_c, climex.sum[[i]], climex.sum.noirr[[i]])
+  AllYears.composite[[i]] <- composite.fun(irr_r_c, AllYears_r[[i]], AllYears_r_noirr[[i]])
+}
+
+plot(composite.stack[[1]][[1:4]])
+
+#do the same but for weekly data
+
+###load the weekly data
+week_irr <- nc_open(mod_irr_week)
+week_noirr <- nc_open(mod_noirr_week)
+
+#use get nc to get the variables (error in one of the files)
+
+##########2.link the map to maize cultivation##########
+
+#load the yield data from MAPSPAM
+#check what the rest are later
+MAPSPAM <- paste0(path,"NetCDF/MAPSPAM/spam2010V2r0_global_Y_MAIZ_A.tif")
+
+#3.Fit the linear trend of yearly data to a location to predict the trend
+###Compare location
+path <- "NetCDF/"
+setwd(path)
+
+#A.flavus files
+file1="A.flavus_CM30_1995H_V2_orig-param-file_Irr_Annual.nc"
+file2="A.flavus_CM30_1995H_V2_orig-param-file_NoIrr_Annual.nc"
+mask="CM30_1995H_V2_gmia_v5_aei_h_classified10ha.tif"
+
+#define which dname will be used
+k <- 1
+
+#load the irrigation mask
+irr_mask <- raster("Dymex/Aflatoxin/NetCDF/CM30_1995H_V2_gmia_v5_aei_h_classified10ha.tif")
+
+#load the NetCDFfile
+
+#modified parameters
+afla_ncdf1 <- nc_open(file1)
+afla_ncdf2 <- nc_open(file2)
+
+#Use the get_nc function to fix the lat and lon
+r_noirr <- get_nc(afla_ncdf1, dname_2[k])
+r_irr <- get_nc(afla_ncdf2, dname_2[k])
+plot(r_noirr)
+plot(r_irr)
+
+#crop the irrigation layer (no antarctica)
+r_irr_crop <- crop(x = irr_mask, y = r_irr)
+plot(r_irr_crop)
+
+#create composite raster
+r_composite <- composite.fun(r_irr_crop, r_irr, r_noirr)
+plot(r_composite, zlim = c(0,100))
+
+#load the country shape data
+test <- raster(file, layer = 1)
+
+World <- rnaturalearth::ne_countries(scale = 10, continent = NULL, 
+                                     returnclass = "sf", type ="countries") 
 World <- rmapshaper::ms_simplify(World, keep = 0.1, keep_shapes = TRUE) 
+plot(World)
 
-#plot(AllYears_raster_2000)
-#try to visualize the plot with ggplot2
-#world_map <- map_data("world")
-#area_data <- data.frame(area_code = c("US", "CA", "GB", "FR", "JP"), value = c(0, 0, 0, 0, 0))
-#merged_data <- merge(world_map, area_data, by.x = "region", by.y = "area_code", all.x = TRUE)
-#plot(merged_data$long, merged_data$lat, type = "n", xlim = c(-180, 180), ylim = c(-90, 90), xlab = "lat", ylab = "long")
-#polygon(merged_data[c("long", "lat")], col = "lightblue", border = "pink")
-#points(merged_data$long, merged_data$lat, pch = 19, cex = merged_data$value / max(merged_data$value) * 2)
+
+###try to fit the linear trend to a location in the data
+
+#extract the time-series data rasterstack
+
+# Create a raster stack for your time-series data for the analysis of the linear trend 
+
+###Compare location year
+
+#4. Try to run the parameters file in future climate
