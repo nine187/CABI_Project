@@ -63,3 +63,8 @@ rsconnect/
 *.zip
 
 # End of https://www.toptal.com/developers/gitignore/api/r
+*.html
+*.png
+code/CLIMEX_CL_Annual_extract.Rmd
+code/backup.RData
+code/CLIMEX_CL_Annual_extract.Rmd

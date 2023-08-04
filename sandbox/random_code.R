@@ -1,6 +1,23 @@
 ###############################SANDBOX##########################################
 
 ###codes that might be useful later###
+
+#linear trend for the whole map
+
+# Create a raster stack for your time-series data for the analysis of the linear trend 
+time <- 1:nlayers(mod_irr_allyear_EI_raster)  
+
+#preallocate the list
+climex.slope <- vector(mode = "list", length=length(time)) 
+
+for (i in 1:length(time)){ 
+  
+  climex.slope[[i]] <- calc(mod_noirr_allyear_EI_raster, linear_fun) 
+  
+} 
+
+plot(climex.slope[[1]])
+
 #explore the irrigation mask data
 mask <- raster(irr_mask)
 print(mask)

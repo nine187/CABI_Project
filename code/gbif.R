@@ -10,6 +10,10 @@ library(usethis)
 library(sf)
 #cleaning gbif dataframe
 library(CoordinateCleaner)
+#manipulating dataframes .csv
+library(dplyr)
+
+maize_lit <- read.csv("GitHub/CABI_Project/data/maize_aflavus.csv")
 
 #search for aspergillus flavus 
 #occ_search(scientificName = "Aspergillus flavus")
@@ -163,3 +167,30 @@ gbif_sf <-st_as_sf(gbif_spdf)
 output_file <- "gbif.shp"
 st_write(gbif_sf, output_file)
 write.csv(gbif_coords, file = "gbif_coordinates.csv")
+
+###############################################################################
+#explore the data
+print(maize_lit)
+
+# Replace maize_lit data into lon and lat
+maize_lit <- maize_lit %>%
+  mutate(Longitude = as.numeric(sub(".*\\((.*?)\\s.*", "\\1", WKT)),
+         Latitude = as.numeric(sub(".*\\s(.*?)\\)", "\\1", WKT)))
+
+# check the updated tables
+print(maize_lit)
+
+#create a spatial object for maize literature
+maize.shp <- "file.shp"
+maize_coords <- data.frame(longitude = rep(0,71), latitude = rep(0, 71))
+
+#convert the dataframe into 2 columns of lattitude and longitute
+maize_coords$latitude <- maize_lit$Latitude
+maize_coords$longitude <- maize_lit$Longitude
+
+#Create Spatial point objects
+maize_sf <- st_as_sf(maize_coords, coords = c("longitude", "latitude"), crs = 4326)
+
+#save the output file
+output_file <- "maize.shp"
+st_write(maize_sf, output_file)

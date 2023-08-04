@@ -1,7 +1,5 @@
 #####FUNCTION FOR DATA COLLECTION/DATA CLEANING########
 
-
-
 #####FUNCTION FOR ANALYSIS############
 
 #function for fixing lat and lon in CLIMEX
@@ -37,4 +35,48 @@ composite.fun <- function(Irr, Ri, Rn){
   Irr2 <- reclassify(Irr2, cbind(2, 0))
   Final <- Ri*Irr+Rn*Irr2
   return(Final)
+}
+
+#function for calculating linear slope of the entire raster plot
+linear_fun <- function(x) {
+  if (is.na(x[1])) {
+    NA
+  } else {
+    m = lm(x ~ time)
+    summary(m)$coefficients[2]
+  }
+}
+
+#function for composite map
+fun1 <- function(x) { 
+  climex.ts = ts(x, start=c(min(years)+1), end=c(max(years)), frequency=1)
+  x <- aggregate(climex.ts) 
+}
+
+#function for extracting slope?
+fun2 = function(x) { if (is.na(x[1])){ NA }
+  else { m = lm(x ~ time); summary(m)$coefficients[2] }}
+
+
+#function for p value
+fun3=function(x) { if (is.na(x[1])){ NA }
+  else { m = lm(x ~ time); summary(m)$coefficients[8] }}
+
+#function for sorting out p value less than .95
+fun4 <- function(x) {
+  if (is.na(x[1])){NA}
+   else {
+    m <- lm(x ~ time)
+    coefficients_summary <- summary(m)$coefficients
+    if (!is.null(coefficients_summary) && length(coefficients_summary) >= 8) {
+      p_value <- coefficients_summary[8] # Get the p-value (coefficient with index 8)
+      if (!is.na(p_value) && p_value < 0.95) {
+        return(coef(m)[2] == 1) # Return the coefficient for the 'time' predictor
+      if (!is.na(p_value) && p_value > 0.95 && p_value == 0){
+        return(coef(m)[2] == 0)
+      }
+      }
+    }
+    return(NA)
+   }
 }

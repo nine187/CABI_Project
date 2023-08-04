@@ -164,6 +164,7 @@ map_robin <- tm_shape(st_geometry(World_without_antarctica), projection="+proj=r
               legend.show = TRUE, title = "EI", breaks = c(seq(0,100,5)), alpha = 0.8) +
     tm_shape(st_geometry(World_without_antarctica), projection="+proj=robin") +
     tm_borders(lwd = 1, col = "grey60") +
+    tm_shape(status_ok, projection="+proj=robin") +
     tm_symbols(size = 0.06, 
                shape = 21, 
                border.lwd = 0.7, 
@@ -199,8 +200,18 @@ pal <- colorNumeric(c("grey","lightyellow","yellow","orange","red" ,"red3"), c(0
   na.color = "transparent")
 
 leaflet() %>% addTiles() %>%
-  addRasterImage(r_composite_cropped, colors = cols_brown_yellow_mean, opacity = 0.8) 
-
+  addRasterImage(r_composite_cropped, colors = cols_brown_yellow_mean, opacity = 0.8) %>%
+  addLegend(pal = pal, values = c(0,seq(1,100,1)),
+    title = "EI") %>% 
+    addCircleMarkers(data = status_ok,
+                     radius = 3,
+                     color = "black",
+                     stroke = TRUE, 
+                     opacity = 0.9,
+                     weight = 1,
+                     fill = TRUE,
+                     fillColor = "white",
+                     fillOpacity = 0.1)
 ```
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
