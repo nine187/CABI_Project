@@ -15,10 +15,11 @@ library(maptools)
 library(jsonlite)
 
 #current environment from worldclim
-currentEnv=getData("worldclim", var="bio", res=2.5)
+currentEnv=getData("worldclim", var="bio", res=10)
 
 #future environmental climate scenario for 2070 from HADGEM2-ES model
-futureEnv=getData('CMIP5', var='bio', res=2.5, rcp=85, model='HE', year = 70)
+futureEnv=getData('CMIP5', var='bio', res=10, rcp=85, model='HE', year = 70)
+#futureEnv=getData('CSIRO', var='bio', res=10, rcp=85, model='HE', year = 70)
 names(futureEnv)=names(currentEnv)
 
 #get the data from GBIF database
@@ -38,7 +39,7 @@ Aflavus <-Aflavus[!Aflavusdups, ]
 #make initial plot for diagnostic purposes, check this later
 #plot(wrld_simpl, xlim=c(min(Aflavus$lon)-1,max(Aflavus$lon)+1),ylim=c(min(Aflavus$lat)-1, max(Aflavus$lat)+1), axes=TRUE, col="light yellow")
 
-####SMD####
+####SDM####
 
 # first crop environment to the local species range +/- 10 degrees
 model.extent<-extent(min(Aflavus$lon)-10,max(Aflavus$lon)+10,min(Aflavus$lat)-10,max(Aflavus$lat)+10)

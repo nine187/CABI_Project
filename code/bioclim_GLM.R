@@ -13,10 +13,11 @@ library(tmap)
 library(dismo)
 
 #load the occurrences data
-A.flavus_GBIF <- read.csv('gbif_occurrence.csv')
+A.flavus_GBIF <- read.csv("GitHub/CABI_Project/data/maize_coordinates.csv")
 
 # Convert to an sf object and set the projection
 A.flavus_GBIF <- st_as_sf(A.flavus_GBIF, coords=c('decimalLongitude', 'decimalLatitude'))
+#A.flavus_GBIF <- st_as_sf(A.flavus_GBIF, coords=c('longitude', 'latitude'))
 st_crs(A.flavus_GBIF) <- 4326
 
 #load the environmental data
@@ -163,7 +164,8 @@ present <- subset(A.flavus_GBIF, select='kfold')
 present$pa <- 1
 absent <- pseudo_dismo
 absent$pa <- 0
-
+st_crs(present) <- 4326
+st_transform(absent)
 # - rename the geometry column of absent to match so we can stack them together.
 names(absent) <- c('geometry','kfold','pa')
 st_geometry(absent) <- 'geometry'
@@ -227,3 +229,4 @@ glm_map_future <- glm_pred_future >= max_kappa
 plot(glm_map_future, legend=FALSE, col=c('grey','red'))
 
 table(values(glm_map), values(glm_map_future), dnn=c('hist', '2050'))
+b 

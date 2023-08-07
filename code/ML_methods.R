@@ -12,7 +12,7 @@ library(tmap)
 library(randomForest)
 
 #load the predictor variables
-pred <- load_var(path="GitHub/CABI_Project/data/wc2.1_10m_bio/",
+pred <- load_var(path="",
                  categorical = NULL, format = ".tif", Norm = TRUE, verbose = TRUE,GUI = FALSE)
 plot(pred)
 
