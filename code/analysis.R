@@ -65,9 +65,7 @@ irr_mask <- raster("Dymex/Aflatoxin/FAO_Irrigated Areas/CM30_1995H_V2_gmia_v5_ae
 
 #extract the data from the NetCDF file using the extract_data_list function
 
-################################################################################
 ###################1.Explore each variables&visualize the data##################
-################################################################################
 
 ###EI###
 #extract data list for EI
@@ -242,6 +240,7 @@ for (i in 1:length(mod_noirr_allyear_GI_raster)) {
 }
 
 ###################Creating Composite Map######################################
+
 #composite map for yearly data
 #define the variables
 dname <- c("WS", "TI", "MI", "HS", "GI", "EI", "DS", "DD", "CS", 
@@ -254,7 +253,7 @@ k <- 6
 year_irr <- nc_open(mod_irr_annual)
 year_noirr <- nc_open(mod_noirr_annual)
 
-#use the custom function get_nc to get the dataset 
+#use the custom function get_nc to get the datasets
 year_irr_get <- get_nc(year_irr, dname[k])
 year_noirr_get <- get_nc(year_noirr, dname[k])
 
@@ -267,19 +266,6 @@ year_irr_crop <- crop(x = year_irr_get, y = year_noirr_get)
 r_composite <- composite.fun(year_irr_crop, year_irr_get, year_noirr_get)
 #plot shows a new range
 plot(r_composite)
-
-#rescale into 0-60
-# Original range
-old_min <- 0
-old_max <- 10000
-
-# New range
-new_min <- 0
-new_max <- 60
-
-# Rescale the raster data
-r_composite_rescaled <- ((r_composite - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min
-plot(r_composite_rescaled)
 
 #use tmap to map the composite map
 
@@ -367,20 +353,28 @@ composite_map_noirr <-  tm_shape(year_noirr_get,raster.warp = TRUE, projection="
 tmap_mode("view")
 composite_map_noirr
 
-#create a composite map for the 1970-2019 year data
+####do the same for 1970-2019 datasets###
 #choose the variable of interest
-dname <- "EI"
+dname <- "HS"
 dname <- c("EI","TI","MI","CS","HS","DS","WS","GI")
 years <- 1970:2019
+
+#use nc_open to open the ncdf file
+allyear_irr <- nc_open(mod_irr_allyear)
+allyear_noirr <- nc_open(mod_noirr_allyear)
+
+test <- get_nc(allyear_irr, dname = "EI")
 
 # Create a list with variables matrix for each year
 AllYears <- vector(mode = "list", length = length(dname))
 AllYears.noirr <- vector(mode = "list", length = length(dname))
 
 #loop the data 
+#test <- extract_data_list(mod_irr_allyear, dname = dname, years = years, step = "Year")
+#only shows -55.75-60.25 for all dname why, need to use get_nc_2 to fix
 for (i in 1:length(dname)){
-  AllYears[[i]] <- ffipm::extract_data_list(mod_irr_allyear,dname = dname[i],years = years, step = "Year")
-  AllYears.noirr[[i]] <- ffipm::extract_data_list(mod_noirr_allyear,dname = dname[i],years = years, step = "Year")
+  AllYears[[i]] <- get_nc(allyear_irr,dname = dname[i])
+  AllYears.noirr[[i]] <- get_nc(allyear_noirr,dname = dname[i])
 }
 
 #preallocate the data
@@ -429,7 +423,7 @@ for (i in 1:length(dname)){
 plot(irr_mask, main = "FAO Irrigation layer")
 
 # Crop irrigation layer: 
-Irr.r.c <- crop(x = irr_mask, y = climex.sum[[1]])
+#Irr.r.c <- crop(x = irr_mask, y = climex.sum[[1]])
 composite.fun <- function(Irr, Ri, Rn){
   Irr2 <- Irr+1
   Irr2 <- reclassify(Irr2, cbind(2, 0))
@@ -442,8 +436,8 @@ composite.stack <- vector(mode = "list", length = length(dname))
 AllYears.composite <- vector(mode = "list", length = length(dname))
 
 for (i in 1:length(dname)){
-  composite.stack[[i]] <- composite.fun(Irr.r.c, climex.sum[[i]], climex.sum.noirr[[i]])
-  AllYears.composite[[i]] <- composite.fun(Irr.r.c, AllYears_r[[i]], AllYears_r_noirr[[i]])
+  composite.stack[[i]] <- composite.fun(irr_mask, climex.sum[[i]], climex.sum.noirr[[i]])
+  AllYears.composite[[i]] <- composite.fun(irr_mask, AllYears_r[[i]], AllYears_r_noirr[[i]])
 }
 
 ######modify Dr Anna's code later################
@@ -462,21 +456,42 @@ world_bbox <- c(-180, -90, 180, 90)
 #creating the animation 
 raster_animation(raster = rasters_test, filename= "test.mp4", bbox = world_bbox)
 
-###############################################################################
 ###########2.link the map to maize cultivation##########
-###############################################################################
 
 #load the yield data from MAPSPAM
 #check what the rest are later
 MAPSPAM_maize <- paste0(path,"NetCDF/MAPSPAM/spam2010V2r0_global_Y_MAIZ_A.tif")
 MAPSPAM_maize <- raster(MAPSPAM_maize)
 plot(MAPSPAM_maize)
+print(MAPSPAM_maize)
+
+# Set the CRS to EPSG:4326 (WGS 84)
+projection(MAPSPAM_maize) <- CRS("+init=EPSG:4326")
+
+#getvalues from the cells
+maize_val <- getValues(MAPSPAM_maize)
+
+# Filter out NA and zero values
+maize_val_filtered <- maize_val[!is.na(maize_val) & maize_val != 0]
+print(maize_val_filtered)
+
+# Get the cell indices of non-NA and non-zero cells in the raster
+maize_non_zero <- which(!is.na(maize_val) & maize_val != 0)
+
+# Get the associated coordinates for the non-NA and non-zero cells
+maize_coord <- as.data.frame(xyFromCell(MAPSPAM_maize, maize_non_zero))
+
+# Add the values as a new column in the data frame
+maize_coord$value <- maize_val_filtered
+
+# Print the result
+print(maize_coord)
 
 #investigate where there is a high overlap in yield and EI then look at the trend
+#AZ, USA
 
-################################################################################
+
 #####3.Fit the linear trend of yearly data to a location to predict the trend###
-################################################################################
 
 #inspect the pixels
 print(mod_noirr_allyear_EI_raster$X1970)
@@ -526,7 +541,6 @@ lines(subset_time, trend_line, col = "red")
 legend("bottomright", legend = c("Extracted Values", "Linear Trend"), col = c("blue", "red"), lty = c(1, 1))
 summary(trend_line)
 
-#############
 #calculate slope and composite stack
 time <- 1:nlayers(composite.stack[[1]]) 
 
@@ -549,57 +563,19 @@ for (i in 1:length(dname)){
   
 }
 
-plot(p[[1]])
+#plot(p[[1]])
 
-#plot(p, main="p-Value")
-
-
-
-# p_points = rasterToPoints(p)
-
-# p_df = data.frame(p_points)
-
-# head(p_df) #breaks will be set to column "layer"
-
-# p_df$cuts=cut(p_df$layer,breaks=c(0,0.05,0.10,0.2,0.3,0.4,0.5,1)) #set breaks
-
-# 
-
-# ggplot(data=p_df) + 
-
-#     geom_tile(aes(x=x,y=y,fill=cuts)) + 
-
-#     scale_fill_brewer("p-value",type = "seq", palette = "RdBu") +
-
-#     coord_equal() +
-
-#     theme_bw() +
-
-#     theme(panel.grid.major = element_blank()) +
-
-#     xlab("Longitude") + ylab("Latitude")
-
-
-
-#then mask all values >0.05 to get a confidence level of 95%:
+#then mask all values >0.05 to get a confidence level of 95%:#Dr Anna's comment
 
 m = c(0, 0.05, 1, 0.05, 1, 0)
 
 rclmat = matrix(m, ncol=3, byrow=TRUE)
-
-
-
-fun4=function(x) { x[x<1] <- NA; return(x)}
-
-
 
 p.mask <- vector(mode = "list", length = length(dname))
 
 p.mask.NA <- vector(mode = "list", length = length(dname))
 
 trend.sig <- vector(mode = "list", length = length(dname))
-
-
 
 for (i in 1:length(dname)){
   
@@ -611,10 +587,102 @@ for (i in 1:length(dname)){
   
 }
 
+plot(trend.sig[[3]])
+
+#test extracting values from different raster layer
+
+projection(composite.stack) <- CRS("+init=EPSG:4326")
+
+test <- getValues(trend.sig[[1]])[!is.na(getValues(trend.sig[[1]]))]
+p_value_list <- getValues(mod_irr_allyear_EI_raster[[1]])[!is.na(getValues(mod_irr_allyear_EI_raster[[1]]))]
 
 
-###############################################################################
-##########4. Try to run the parameters file in future climate model############
-###############################################################################
+#test
+# Get the raster layer
+raster_layer <- AllYears.composite[[1]]$layer.1
 
+# Get all values from the raster
+EI_value_list_test <- getValues(raster_layer)
 
+# Get all cell indices 
+all_cells <- 1:length(EI_value_list_test) #167760 cells
+
+# Get the associated coordinates for all cells (including NA and zero values)
+coordinates_df <- as.data.frame(xyFromCell(raster_layer, all_cells))
+
+# Add the values as a new column in the data frame
+coordinates_df$value <- EI_value_list_test
+coordinates_df
+
+#loop this for all data
+#preallocate the dataset
+all_composite_EI<- list()
+
+# Loop through all the layers
+for (layer_name in names(composite.stack[[1]])) {
+  # get the current raster layer
+  raster_layer <- composite.stack[[1]][[layer_name]]
+  
+  # extract all the values
+  EI_value_list_test <- getValues(raster_layer)
+  
+  # get all the cells
+  all_cells <- 1:length(EI_value_list_test)
+  
+  # get all the assosiated coordinates
+  coordinates_df <- as.data.frame(xyFromCell(raster_layer, all_cells))
+  
+  # rename the columns
+  colnames(coordinates_df) <- c("longitude", "latitude")
+  
+  # add the values to the column
+  coordinates_df$value <- EI_value_list_test
+  
+  # add it to the df
+  all_composite_EI[[layer_name]] <- coordinates_df
+}
+
+#p-values
+all_composite_p <- list()
+for (i in 1:8) {
+  raster_layer <- p[[i]]
+  test <- getValues(raster_layer)
+  all_cells <- 1:length(test)
+  coordinates_df <- as.data.frame(xyFromCell(raster_layer, all_cells))
+  colnames(coordinates_df) <- c("longitude", "latitude")
+  coordinates_df$value <- test
+  all_composite_p[[i]] <- coordinates_df
+}
+
+#trend sig
+trend_all <- list()
+for (i in 1:8) {
+  raster_layer <- trend.sig[[i]]
+  test <- getValues(raster_layer)
+  all_cells <- 1:length(test)
+  coordinates_df <- as.data.frame(xyFromCell(raster_layer, all_cells))
+  colnames(coordinates_df) <- c("longitude", "latitude")
+  coordinates_df$value <- test
+  trend_all[[i]] <- coordinates_df
+}
+
+#plot the highest trend significant coordinate's EI value which is 
+#lon -24.25 and lat 16.75
+
+# Preallocate the list
+extracted_values_list <- list()
+
+# Loop through all the layers
+for (layer_name in names(composite.stack[[1]])) {
+  #get current raster layer
+  raster_layer <- composite.stack[[1]][[layer_name]]
+  # extract the value at the specific longitude and latitude
+  extracted_value <- extract(raster_layer, cbind(-24.25, 16.75))
+  # store the extracted value in the list
+  extracted_values_list[[layer_name]] <- extracted_value
+}
+
+#plotting
+plot(1:nlayers(composite.stack[[1]]), unlist(extracted_values_list),
+     type = "b", xlab = "Layer", ylab = "EI Value",
+     main = "EI Values for lon -24.25 and lat 16.75", col = "blue", pch = 16)
