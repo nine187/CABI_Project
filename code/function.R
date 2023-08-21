@@ -1,5 +1,10 @@
 #####FUNCTION FOR DATA COLLECTION/DATA CLEANING########
-
+#for determingin whether the species in too far on lat/lon
+is_in_antarctica_or_north_pole <- function(latitude, longitude) {
+  in_antarctica <- latitude <= -60 & longitude >= -180 & longitude <= 180
+  in_north_pole <- latitude >= 60 & longitude >= -180 & longitude <= 180
+  in_antarctica | in_north_pole
+}
 #####FUNCTION FOR ANALYSIS############
 
 #function for fixing lat and lon in CLIMEX
@@ -53,10 +58,9 @@ fun1 <- function(x) {
   x <- aggregate(climex.ts) 
 }
 
-#function for extracting slope?
+#function for extracting slope
 fun2 = function(x) { if (is.na(x[1])){ NA }
   else { m = lm(x ~ time); summary(m)$coefficients[2] }}
-
 
 #function for p value
 fun3=function(x) { if (is.na(x[1])){ NA }
@@ -64,3 +68,12 @@ fun3=function(x) { if (is.na(x[1])){ NA }
 
 #function for returning NA to values less than 1
 fun4=function(x) { x[x<1] <- NA; return(x)}
+
+#function for calculating composite stack
+composite.fun <- function(Irr, Ri, Rn){
+  Irr2 <- Irr+1
+  Irr2 <- reclassify(Irr2, cbind(2, 0))
+  Irr.l <- list(Irr,Irr2)
+  Final <- Ri*Irr.l[[1]]+Rn*Irr.l[[2]]
+  return(Final)
+}

@@ -13,7 +13,9 @@ library(CoordinateCleaner)
 #manipulating dataframes .csv
 library(dplyr)
 
-maize_lit <- read.csv("GitHub/CABI_Project/data/maize_aflavus.csv")
+source("CABI_Project/code/function.R")
+
+maize_lit <- read.csv("CABI_Project/data/maize_coordinates.csv")
 
 #search for aspergillus flavus 
 #occ_search(scientificName = "Aspergillus flavus")
@@ -50,12 +52,6 @@ gbif <- subset(gbif, !is.na(decimalLatitude) | !is.na(decimalLongitude))
 #2313 datapoints are left
 
 #remove the datapoints in impossible continents (ex.Antarctica and North pole)
-#put this in a seperate function file later
-is_in_antarctica_or_north_pole <- function(latitude, longitude) {
-  in_antarctica <- latitude <= -60 & longitude >= -180 & longitude <= 180
-  in_north_pole <- latitude >= 60 & longitude >= -180 & longitude <= 180
-  in_antarctica | in_north_pole
-}
 
 # Filter out datapoints in Antarctica and the North Pole
 gbif <- gbif[!is_in_antarctica_or_north_pole(gbif$decimalLatitude, gbif$decimalLongitude), ]
@@ -121,19 +117,34 @@ data(World, land)
 
 #plot the datapoints
 aflavus_map <- tm_shape(World) +
-  tm_borders("white", lwd = .5) +
-  #check the land cover/cover_cls & modify the legends later
-tm_shape(land) +
-  tm_raster("cover", palette = terrain.colors(10))+
+  tm_borders("black", lwd = 1) +
+  qtm(World, fill="lightgrey", projection=4326, inner.margins=0) +
 tm_shape(gbif_tmap)+
-  tm_dots(col = "blue", palette = "Set1", title = "City") +
+  tm_dots(col = "red", palette = "Set1") +
   tm_basemap("OpenStreetMap") +
   tm_layout(bg.color = "white", inner.margins = c(0, .02, .02, .02))+
   tm_layout(legend.position = c("left", "bottom"))+
+  tm_legend(position = c("left", "bottom"))+
+  tm_scale_bar(
+    width = 0.1,
+    text.size = 0.5,
+    text.color = NA,
+    color.dark = "black",
+    color.light = "white",
+    lwd = 1,
+    position = c("0.01", "0.08"),
+    bg.color = NA,
+    bg.alpha = NA,
+    just = NA)+
+  tm_grid( col = "gray70", alpha = 0) +
+  tm_xlab("Longitude") +
+  tm_ylab("Latitude")+
+  tm_compass(position = c("0.01","0.15"), size = 1, type = "arrow")
+
 #https://www.ebi.ac.uk/ena/browser/view/OL334750 evidence of A.flavus in Antarctica
-tmap_mode("view")
+#tmap_mode("view")
 #check the map
-aflavus_map
+#aflavus_map
 
 #export the map
 tmap_save(aflavus_map, filename = "aflavus_map.png")
@@ -182,6 +193,7 @@ print(maize_lit)
 
 #create a spatial object for maize literature
 maize.shp <- "file.shp"
+st_write(maize_lit, maize.shp)
 maize_coords <- data.frame(longitude = rep(0,71), latitude = rep(0, 71))
 
 #convert the dataframe into 2 columns of lattitude and longitute
@@ -189,8 +201,36 @@ maize_coords$latitude <- maize_lit$Latitude
 maize_coords$longitude <- maize_lit$Longitude
 
 #Create Spatial point objects
-maize_sf <- st_as_sf(maize_coords, coords = c("longitude", "latitude"), crs = 4326)
+maize_sf <- st_as_sf(maize_lit, coords = c("longitude", "latitude"), crs = 4326)
 
 #save the output file
 output_file <- "maize.shp"
 st_write(maize_sf, output_file)
+
+#map
+maize_map <- tm_shape(World) +
+  tm_borders("black", lwd = 1) +
+  qtm(World, fill="lightgrey", projection=4326, inner.margins=0) +
+  tm_shape(maize_sf)+
+  tm_dots(col = "red", palette = "Set1") +
+  tm_basemap("OpenStreetMap") +
+  tm_layout(bg.color = "white", inner.margins = c(0, .02, .02, .02))+
+  tm_layout(legend.position = c("left", "bottom"))+
+  tm_legend(position = c("left", "bottom"))+
+  tm_scale_bar(
+    width = 0.1,
+    text.size = 0.5,
+    text.color = NA,
+    color.dark = "black",
+    color.light = "white",
+    lwd = 1,
+    position = c("0.01", "0.08"),
+    bg.color = NA,
+    bg.alpha = NA,
+    just = NA)+
+  tm_grid( col = "gray70", alpha = 0) +
+  tm_xlab("Longitude") +
+  tm_ylab("Latitude")+
+  tm_compass(position = c("0.01","0.15"), size = 1, type = "arrow")
+maize_map
+tmap_save(maize_map, filename = "maize_map.png")

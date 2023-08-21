@@ -2,7 +2,7 @@ rm(list=ls())
 graphics.off()
 
 #package for loading the github functions
-library(remotes)
+#library(remotes)
 
 #function for dealing with CLIMEX data
 #remotes::install_github("nowosad/ffipm") 
@@ -11,36 +11,26 @@ library(remotes)
 #https://github.com/aniaszy/ffipm
 library(ffipm)
 
-#package for mapping the output
-library(tmap)
-
 #use to convert dataframes back to sf class
 library(sf)
 
 #deal with raster files
 library(raster)
 
-#help visualize tmap package 
-library(rnaturalearth) 
-
-#package for downloading rnaturalearthhires
-library(devtools)
-#devtools::install_github("ropensci/rnaturalearthhires") 
-
-library(rmapshaper) 
-
 #alternative package to read the NetCDF files
 library(ncdf4)
 
-library(leaflet)
-
 #source the functions
-source("GitHub/CABI_Project/code/function.R")
+source("function.R")
 #define the path for the files
-path <- "C:/Users/Pasith/Documents/Dymex/Aflatoxin/"
+path <- ("Dymex/Aflatoxin/")
+
 #1970-2019 (fifty years) annual data irrigation and no irrigation
-mod_irr_allyear <- paste0(path, "NetCDF/A.flavus_modified-param-file_Irr_Annual_1970-2019.nc")
+mod_irr_final <- paste0(path, "NetCDF/A.flavus_CRU_ts4.05_1970_2019_Irr_params_v4_annual.nc")
+mod_noirr_final <- paste0(path, "NetCDF/A.flavus_CRU_ts4.05_1970_2019_NoIrr_params_v4_annual.nc")
+
 #time-series data, weekly averages for individual year
+mod_irr_allyear <- paste0(path, "NetCDF/A.flavus_modified-param-file_Irr_Annual_1970-2019.nc")
 mod_noirr_allyear <- paste0(path, "NetCDF/A.flavus_modified-param-file_NoIrr_Annual_1970-2019.nc")
 
 #modify annual parameter
@@ -61,18 +51,18 @@ og_noirr_annual <- paste0(path, "NetCDF/A.flavus_CM30_1995H_V2_orig-param-file_N
 og_noirr_weekly <- paste0(path, "NetCDF/A.flavus_CM30_1995H_V2_orig-param-file_NoIrr_Weekly.nc")
 
 #irrigation mask
-irr_mask <- raster("Dymex/Aflatoxin/FAO_Irrigated Areas/CM30_1995H_V2_gmia_v5_aei_h_classified10ha.tif")
+irr_mask <- raster("CABI_Project/data/CM30_1995H_V2_gmia_v5_aei_h_classified10ha.tif")
 
 #extract the data from the NetCDF file using the extract_data_list function
 
 ###################1.Explore each variables&visualize the data##################
-
 ###EI###
+#finalized variable
 #extract data list for EI
-mod_irr_allyear_EI <- extract_data_list(mod_irr_allyear,"EI", years = 1970:2019,
+mod_irr_allyear_EI <- extract_data_list(mod_irr_final,"EI", years = 1970:2019,
                                         step = "Year")
 
-mod_noirr_allyear_EI <- extract_data_list(mod_noirr_allyear,"EI", years = 1970:2019,
+mod_noirr_allyear_EI <- extract_data_list(mod_noirr_final,"EI", years = 1970:2019,
                                         step = "Year")
 #create the raster stack, check step = Year/Step (Weekly)
 mod_irr_allyear_EI_raster <- create_raster_stack(mod_irr_allyear_EI,
@@ -100,6 +90,11 @@ for (i in 1:length(mod_irr_allyear_EI_raster)) {
   # Clear for the next iteration of the plot
   dev.off()
 }
+#save the output for eva. script, specify a name
+output_filename <- "output.tif"
+
+# save the raster
+writeRaster(mod_irr_allyear_EI_raster$X1970, filename = output_filename, format = "GTiff", overwrite = TRUE)
 
 #no irrigation EI
 for (i in 1:length(mod_noirr_allyear_EI_raster)) {
@@ -250,6 +245,9 @@ dname <- c("WS", "TI", "MI", "HS", "GI", "EI", "DS", "DD", "CS",
 k <- 6
 
 #use nc_open to the dataset
+#final_irr <- nc_open(mod_irr_final)
+#final_noirr <- nc_open(mod_noirr_final)
+
 year_irr <- nc_open(mod_irr_annual)
 year_noirr <- nc_open(mod_noirr_annual)
 
@@ -257,13 +255,15 @@ year_noirr <- nc_open(mod_noirr_annual)
 year_irr_get <- get_nc(year_irr, dname[k])
 year_noirr_get <- get_nc(year_noirr, dname[k])
 
-plot(year_irr_get[[1]])
+plot(mod_irr_allyear_EI_raster$X1970)
+plot(mod_noirr_allyear_EI_raster$X1970)
 
 # Crop irrigation layer: 
-year_irr_crop <- crop(x = year_irr_get, y = year_noirr_get)
+year_irr_crop <- crop(x = irr_mask, y = mod_irr_allyear_EI_raster$X1970)
+#plot(year_irr_crop)
 
 #create a composite map
-r_composite <- composite.fun(year_irr_crop, year_irr_get, year_noirr_get)
+r_composite <- composite.fun(year_irr_crop, mod_irr_allyear_EI_raster$X1970, mod_irr_allyear_EI_raster$X1970)
 #plot shows a new range
 plot(r_composite)
 
@@ -283,98 +283,18 @@ plot(r_composite_cropped)
 r_Irr_cropped = crop(year_irr_get, box_sp)
 r_NoIrr_cropped = crop(year_noirr_get, box_sp) 
 
-#crop polygon
-World_without_antarctica <- World %>% dplyr::filter(sovereignt != "Antarctica")
-plot(World_without_antarctica)
-
-cuts_mean=c(0,seq(1,100,1)) # EI
-cuts_l_mean <- length(cuts_mean)
-cols_brown_yellow_mean <- c("grey", colorRampPalette(c("lightyellow","yellow",
-                          "orange","red" ,"red3"))(cuts_l_mean-1))
-
-#composite map
-tmap_mode("plot")
-composite_map_rescaled <-  tm_shape(r_composite_rescaled,raster.warp = TRUE, projection="+proj=longlat") +
-  tm_raster(style = 'cont',palette =  cols_brown_yellow_mean,
-            legend.show = TRUE, title = "EI", alpha = 0.8)+
-  tm_shape(st_geometry(World_without_antarctica), projection="+proj=longlat") +
-  tm_fill(col = "grey", alpha = 0.1)+
-  tm_layout(main.title.position = "left",
-            main.title.size = 0.9, 
-            earth.boundary = FALSE,
-            bg.color = "white",
-            space.color="white",
-            legend.title.size=1,                  
-            legend.text.size = 0.8, 
-            fontface="bold",#0.6 or 0.7
-            frame = FALSE) +
-  tm_legend(position = c("left", "bottom"))
-  
-tmap_mode("view")
-composite_map_rescaled
-
-#irrigated scenario
-tmap_mode("plot")
-composite_map_irr <-  tm_shape(year_irr_get,raster.warp = TRUE, projection="+proj=longlat") +
-  tm_raster(style = 'cont',palette =  cols_brown_yellow_mean,
-            legend.show = TRUE, title = "EI", alpha = 0.8)+
-  tm_shape(st_geometry(World_without_antarctica), projection="+proj=longlat") +
-  tm_fill(col = "grey", alpha = 0.1)+
-  tm_layout(main.title.position = "left",
-            main.title.size = 0.9, 
-            earth.boundary = FALSE,
-            bg.color = "white",
-            space.color="white",
-            legend.title.size=1,                  
-            legend.text.size = 0.8, 
-            fontface="bold",#0.6 or 0.7
-            frame = FALSE) +
-  tm_legend(position = c("left", "bottom"))
-tmap_mode("view")
-composite_map_irr
-
-#no irrigation map
-tmap_mode("plot")
-composite_map_noirr <-  tm_shape(year_noirr_get,raster.warp = TRUE, projection="+proj=longlat") +
-  tm_raster(style = 'cont',palette =  cols_brown_yellow_mean,
-            legend.show = TRUE, title = "EI", alpha = 0.8)+
-  tm_shape(st_geometry(World_without_antarctica), projection="+proj=longlat") +
-  tm_fill(col = "grey", alpha = 0.1)+
-  tm_layout(main.title.position = "left",
-            main.title.size = 0.9, 
-            earth.boundary = FALSE,
-            bg.color = "white",
-            space.color="white",
-            legend.title.size=1,                  
-            legend.text.size = 0.8, 
-            fontface="bold",#0.6 or 0.7
-            frame = FALSE) +
-  tm_legend(position = c("left", "bottom"))
-tmap_mode("view")
-composite_map_noirr
-
 ####do the same for 1970-2019 datasets###
 #choose the variable of interest
-dname <- "HS"
 dname <- c("EI","TI","MI","CS","HS","DS","WS","GI")
 years <- 1970:2019
-
-#use nc_open to open the ncdf file
-allyear_irr <- nc_open(mod_irr_allyear)
-allyear_noirr <- nc_open(mod_noirr_allyear)
-
-test <- get_nc(allyear_irr, dname = "EI")
 
 # Create a list with variables matrix for each year
 AllYears <- vector(mode = "list", length = length(dname))
 AllYears.noirr <- vector(mode = "list", length = length(dname))
 
-#loop the data 
-#test <- extract_data_list(mod_irr_allyear, dname = dname, years = years, step = "Year")
-#only shows -55.75-60.25 for all dname why, need to use get_nc_2 to fix
 for (i in 1:length(dname)){
-  AllYears[[i]] <- get_nc(allyear_irr,dname = dname[i])
-  AllYears.noirr[[i]] <- get_nc(allyear_noirr,dname = dname[i])
+  AllYears[[i]] <- ffipm::extract_data_list(mod_irr_final,dname = dname[i],years = years, step = "Year")
+  AllYears.noirr[[i]] <- ffipm::extract_data_list(mod_noirr_final,dname = dname[i],years = years, step = "Year")
 }
 
 #preallocate the data
@@ -398,7 +318,6 @@ for (i in 1:length(dname)){
 
 years <- years[-c(1)]
 years_l <- length(years)
-
 
 climex.sum <- vector(mode = "list", length = length(dname))
 climex.sum.noirr <- vector(mode = "list", length = length(dname))
@@ -424,13 +343,6 @@ plot(irr_mask, main = "FAO Irrigation layer")
 
 # Crop irrigation layer: 
 #Irr.r.c <- crop(x = irr_mask, y = climex.sum[[1]])
-composite.fun <- function(Irr, Ri, Rn){
-  Irr2 <- Irr+1
-  Irr2 <- reclassify(Irr2, cbind(2, 0))
-  Irr.l <- list(Irr,Irr2)
-  Final <- Ri*Irr.l[[1]]+Rn*Irr.l[[2]]
-  return(Final)
-}
 
 composite.stack <- vector(mode = "list", length = length(dname))
 AllYears.composite <- vector(mode = "list", length = length(dname))
@@ -439,8 +351,6 @@ for (i in 1:length(dname)){
   composite.stack[[i]] <- composite.fun(irr_mask, climex.sum[[i]], climex.sum.noirr[[i]])
   AllYears.composite[[i]] <- composite.fun(irr_mask, AllYears_r[[i]], AllYears_r_noirr[[i]])
 }
-
-######modify Dr Anna's code later################
 
 #plot
 plot(composite.stack[[1]])
@@ -490,6 +400,19 @@ print(maize_coord)
 #investigate where there is a high overlap in yield and EI then look at the trend
 #AZ, USA
 
+#filter out dataframes with more than 30,000 T of production
+maize_coord_30k <- maize_coord[maize_coord$value >= 1,]
+
+#141 rows left
+nrow(maize_coord_30k)
+
+#modify the values to 2 decimal points (write this in discussion)
+# Round values in x and y columns to 2 decimal places
+maize_coord_30k$x <- round(maize_coord_30k$x, 1)
+maize_coord_30k$y <- round(maize_coord_30k$y, 1)
+
+#rename the column to lat and lon
+colnames(maize_coord_30k) <- c("longitude", "latitude", "maize")
 
 #####3.Fit the linear trend of yearly data to a location to predict the trend###
 
@@ -542,6 +465,7 @@ legend("bottomright", legend = c("Extracted Values", "Linear Trend"), col = c("b
 summary(trend_line)
 
 #calculate slope and composite stack
+#make sure the 6th one is for EI
 time <- 1:nlayers(composite.stack[[1]]) 
 
 climex.slope <- vector(mode = "list", length=length(dname))
@@ -563,7 +487,7 @@ for (i in 1:length(dname)){
   
 }
 
-#plot(p[[1]])
+plot(p[[1]])
 
 #then mask all values >0.05 to get a confidence level of 95%:#Dr Anna's comment
 
@@ -587,7 +511,9 @@ for (i in 1:length(dname)){
   
 }
 
-plot(trend.sig[[3]])
+zplot(p.mask[[1]])
+plot(p.mask.NA[[1]])
+plot(trend.sig[[1]])
 
 #test extracting values from different raster layer
 
@@ -643,7 +569,7 @@ for (layer_name in names(composite.stack[[1]])) {
 }
 
 #p-values
-all_composite_p <- list()
+all_p <- list()
 for (i in 1:8) {
   raster_layer <- p[[i]]
   test <- getValues(raster_layer)
@@ -653,6 +579,15 @@ for (i in 1:8) {
   coordinates_df$value <- test
   all_composite_p[[i]] <- coordinates_df
 }
+p_EI <- as.data.frame(p[[1]])
+
+#change coords to see if there are match
+p_EI$longitude <- round(p_EI$longitude, 1)
+p_EI$latitude <- round(p_EI$latitude , 1)
+
+
+#merge the 2 dfs
+merged_df <- merge(p_EI, maize_coord_30k, by = c('longitude', 'latitude'))
 
 #trend sig
 trend_all <- list()
@@ -666,23 +601,21 @@ for (i in 1:8) {
   trend_all[[i]] <- coordinates_df
 }
 
+# Extract values that are not NA along with coordinates from trend_all[[1]]
+filtered_values_df <- trend_all[[1]][!is.na(trend_all[[1]]$value), ]
+
+# Print the filtered values and coordinates
+print(filtered_values_df)
+filtered_values_df
+
+#match the values of coordinates with MAPSPAM maize yield with significant values
+merged_df <- merge(filtered_values_df, maize_coord_30k, by = c("longitude", "latitude"))
+
+#no merged df
+print(merged_df)
+
+#no matched coordinates
+
 #plot the highest trend significant coordinate's EI value which is 
 #lon -24.25 and lat 16.75
-
-# Preallocate the list
-extracted_values_list <- list()
-
-# Loop through all the layers
-for (layer_name in names(composite.stack[[1]])) {
-  #get current raster layer
-  raster_layer <- composite.stack[[1]][[layer_name]]
-  # extract the value at the specific longitude and latitude
-  extracted_value <- extract(raster_layer, cbind(-24.25, 16.75))
-  # store the extracted value in the list
-  extracted_values_list[[layer_name]] <- extracted_value
-}
-
-#plotting
-plot(1:nlayers(composite.stack[[1]]), unlist(extracted_values_list),
-     type = "b", xlab = "Layer", ylab = "EI Value",
-     main = "EI Values for lon -24.25 and lat 16.75", col = "blue", pch = 16)
+#lon
