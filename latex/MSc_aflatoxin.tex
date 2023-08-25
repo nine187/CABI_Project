@@ -1,0 +1,264 @@
+
+\documentclass[a4paper,11]{article}
+
+%\title{Unused Title}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{blindtext}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+% Use helvet if uarial cannot be installed
+%\usepackage{uarial}
+\usepackage[scaled]{helvet}
+
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{courier}
+\usepackage{setspace}
+\usepackage[table,svgnames]{xcolor}
+\usepackage{fancyvrb} 
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{longtable}
+\usepackage{relsize}
+\usepackage{tfrupee}
+\usepackage{rotating}
+\usepackage{lipsum}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{aliascnt}
+\usepackage{amsmath}
+
+\usepackage{natbib}
+\newcommand*{\urlprefix}{Available from: }
+\newcommand*{\urldateprefix}{Accessed }
+\bibliographystyle{agsm}
+\makeatletter
+\newcommand\footnoteref[1]{\protected@xdef\@thefnmark{\ref{#1}}\@footnotemark}
+\makeatother
+
+\newaliascnt{eqfloat}{equation}
+\newfloat{eqfloat}{h}{eqflts}
+\floatname{eqfloat}{Equation}
+
+\newcommand*{\ORGeqfloat}{}
+\let\ORGeqfloat\eqfloat
+\def\eqfloat{%
+	\let\ORIGINALcaption\caption
+	\def\caption{%
+		\addtocounter{equation}{-1}%
+		\ORIGINALcaption
+	}%
+	\ORGeqfloat
+}
+
+\addto\captionsenglish{% Replace "english" with the language you use
+	\renewcommand{\contentsname}%
+	{List of Contents}%
+}
+
+\newcommand\tab[1][1cm]{\hspace*{#1}}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{backcolour},   
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{magenta},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2,
+	xleftmargin=2.0 cm,
+	xrightmargin=-2.0cm,
+	frame=lr,
+	%	framesep=-5pt,
+	framerule=0pt
+}
+
+\lstset{style=mystyle}
+
+\definecolor{Teal}{RGB}{0,128,128}
+\definecolor{NewBlue1}{RGB}{4,100,226}
+\definecolor{NiceBlue}{RGB}{63,104,132}
+\definecolor{DarkRed}{RGB}{14,53,59}
+\definecolor{NewBlue2}{RGB}{62,100,125}
+\definecolor{NewBlue3}{RGB}{44,100,128}
+
+\hypersetup{
+	colorlinks,
+	citecolor=NiceBlue,
+	linkcolor=NewBlue1,
+	urlcolor=Blue
+	%	citebordercolor=Violet,
+	%	filebordercolor=Red,
+	%	linkbordercolor=Blue
+}
+
+
+% Modify the \citepp command to produce (Author, Year) format
+\let\oldcitep\citepp
+\renewcommand{\citepp}[1]{(\citepalp{,#1})}
+
+
+\usepackage{geometry}
+\linespread{1.25}
+\usepackage[parfill]{parskip} % Avoid indentation
+
+\geometry{
+	a4paper,
+	left=4cm,
+	right=2.5cm,
+	top=2.5cm,
+	bottom=2.5cm,
+}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{} % Clear all header and footer fields
+\fancyhead[R]{} % Set the header content on the right side
+\fancyfoot[C]{\thepage} % Set the page number at the center of the footer
+\renewcommand{\headrulewidth}{0pt} % Remove header rule line
+
+\begin{document}
+	\pagenumbering{gobble}
+	\begin{center}
+		{\large IMPERIAL COLLEGE LONDON}
+	\end{center}
+	%	\maketitle
+	\vspace{4cm}
+	
+	\begin{center}
+		
+		\Huge Modeling the spatial distribution of aflatoxin in maize crops and \textit{Aspergillus flavus} with CLIMEX and ensemble species distribution model\\	
+  
+		\vspace{.5cm}		
+
+  
+	\end{center}
+	\vspace{2.5cm}
+	\begin{center}
+		\Large Pasith Prayoonrat\\External Supervisor: Dr. Anna Szyniszewska
+        \\Internal Supervisor: Dr. Martin Bidartondo
+	\end{center}
+	
+	\vspace{4cm}
+	\begin{center}
+		{\large A thesis submitted in partial fulfilment of the requirements for the degree of \\
+        \\ Master of Science at Imperial College London Submitted for the \\ MSc Computational Methods in Ecology and Evolution}
+	\end{center}
+	
+	\begin{center}
+		{\large 24 August 2023}
+	\end{center}		
+
+\newpage
+	\pagenumbering{Roman}
+
+\section*{Declaration and Acknowledgement}
+I declare the work presented in this thesis to be my own.
+The code for this project can be accessed at \url{https://github.com/nine187/CABI_Project}.
+
+\\
+I want to thank my supervisor, Dr. Anna Szyniszewska, for all the guidance and resources provided throughout my time working on this project.  Also, I thank my friends who supported me emotionally while working on this project.
+
+I sincerely thank Prof Darren Kriticos for his help consulting with the parameters in CLIMEX.
+
+\\
+The meteorological data were provided by Dr. Anna Szyniszewska of CABI. Additionally, parts of the code and R packages used for the analysis were provided and adapted from her.
+\\
+Bioclim variables were downloaded from the CliMond Archive \citeppp{al2012prevalence}, and the following variables were chosen: Bio1-Bio40 \citep{hutchinson2009anuclim} \citep{kriticos2014extending}.
+
+\\
+The word count of this thesis is 5610.
+
+
+
+\section*{Lexicon}
+\textbf{ANN}- Artificial neural network \\
+\textbf{AUC}- Area under the ROC curve \\
+\textbf{CABI}- Centre for Agricultural and Bioscience \\
+\textbf{CLIMEX}- CLIMatic indEX \\
+\textbf{EI}- Ecoclimatic index \\
+\textbf{GAM}- Generalized addition model \\
+\textbf{GBIF}- Global Biodiversity Information Facility \\
+\textbf{GLM}- Generalized linear model \\
+\textbf{MARS}- Mulitvariate adaptive regression spline \\
+\textbf{MAXENT}- Maximum entropy \\
+\textbf{SDM}- Species distribution model \\
+\textbf{SVM}- Support vector machine \\
+\textbf{RF}- Random forest
+
+
+\section*{Keywords}
+aflatoxin, \textit{Aspergillus flavus}, CLIMEX, ensemble model, climate change, species distribution \\ modeling
+
+\pagebreak
+
+\centering
+
+\section*{ABSTRACT}
+\raggedright % Stop centering here
+
+\textit{Aspergillus flavus} is a species of fungus that produces a potent hepatocarcinogenic mycotoxin called aflatoxin. Aflatoxin can contaminate crops and is produced primarily in maize by the fungus species. In order to understand the distribution of the pathogen system in maize and \textit{Aspergillus flavus}, I used a mechanistic modeling tool: CLIMEX, and an ensemble species distribution model to determine its distribution range. I created a parameter involving specific temperature and moisture ranges where aflatoxin can be produced in maize by \textit{A. flavus}, then ran the parameters with historical and future meteorological data using a mechanistic species distribution computational tool: CLIMEX. To explore the species distribution of \textit{A. flavus}, I ran a pseudo-absence ensemble species distribution model comprised of seven different algorithms to understand the global distribution of \textit{A. flavus} with the Global Biodiversity Information Facility occurrence database. The models showed that the species were mainly prevalent in tropical and subtropical regions and will distribute in higher latitudes in the future due to a reduced cold stress level from climate change. I analyzed the changes in suitability of the historical data with high maize yields, and the trend showed increasing suitability of \textit{A. flavus} across areas with high maize yield. As the ecological niches of \textit{A. flavus} and maize changes in the future, areas in northern Europe and eastern Russia will be suitable to grow maize and susceptible to aflatoxin infection in the year 2100. Areas where aflatoxin is a threat will shift due to climate change, and modeling its main producing species \textit{A. flavus} is essential to reduce these highly carcinogenic metabolites' economic and health impacts.
+
+
+\pagebreak
+\tableofcontents
+\pagebreak
+\listoffigures
+\listoftables
+\pagebreak
+\newpage
+%\section{Notation}
+%\textbf{IF APPLICABLE}
+
+\cleardoublepage\pagenumbering{arabic}
+
+\section{Introduction}
+\input{introduction.tex}
+
+\newpage
+\section{Methods}
+\input{methodology.tex}
+
+\newpage
+\section{Results}
+\input{results}
+
+\newpage
+\section{Discussion}
+\input{analysis.tex}
+
+\newpage
+\section{Conclusion}
+\input{conclusion.tex}
+
+\pagebreak
+\section{References}
+\bibliography{irrbibfile.bib}
+\pagebreak
+
+\pagenumbering{roman}
+
+\section{Supplementary Information}
+\input{appendix.tex}
+
+\end{document}          

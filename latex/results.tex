@@ -1,0 +1,109 @@
+\subsection{CLIMEX model output for aflatoxin with  occurrence data}
+
+\subsubsection{Ecoclimatic index map}
+\begin{figure*}[!ht]
+	\centering
+	\includegraphics[width=\textwidth]{images/composite_crop.pdf}
+	\caption{EI composite map of the meteorological data from 2017 to 2019}
+	\label{fig:EI composite map of the meteorological data from 2017 to 2019}
+\end{figure*}
+\pagebreak
+
+
+I created a composite map using CLIMEX parameters with the CRU TS4 weekly data for 1970-2019 at 30’ spatial resolution \citep{mitchell2005improved}. Then, I extracted and visualized the EI of the species from 2017-2019 (Figure 4). The map indicated that most of the areas within the latitude of 30'N and -30'S were suitable for aflatoxin production. EI value has shifted throughout the years, specifically on the 40'N and -40'S latitudes, where the marginal areas shifted showing that most of Europe became marginally suitable for \textit{A. flavus}. In Australia, the marginal area shifted and provided the marginal condition for \textit{A. flavus} to grow in the central region in 2017 but not in the following years. While in South America, the eastern region of Brazil showed an optimal growth condition throughout the years. 
+
+
+\subsubsection{Stress maps}
+\begin{figure*}[!ht]
+	\centering
+	\includegraphics[width=16cm]{images/cropped_stress.pdf}
+	\caption{Stress maps output for the historical climate data in CLIMEX}
+	\label{fig:Stress maps output for the historical climate data in CLIMEX}
+\end{figure*}
+
+Cold stress and dry stress were the main limiting factor for the distribution of aflatoxin produced from \textit{A. flavus} in maize in the historical meteorological dataset (Figure 5). Cold stress showed that it is a significant factor in limiting \textit{A. flavus} mainly in the higher latitudes. At the same time, dry stress limited the species in the middle part of Africa and northern China. The highest level of dry stress were around the northern regions of Africa, which consisted primarily of desert biomes. Heat stress showed a medium level of impact and different areas in North Africa, while wet stress did not significantly impact the EI value of the species from this parameter.
+
+\subsection{Linear trends of EI}
+
+To explore the changes in suitability of \textit{A. flavus} more specifically, I extracted four coordinates with the highest amount of maize yield in mapSPAM and then correlated that location with the dataframe of extracted EI value assigned with coordinates in RStudio. All four coordinates showed a positive trend of increasing EI values. In Arizona (USA) and Xinjiang (China), the EI values increased from being marginal for \textit{A. flavus} growth to optimal over 49 years. While in Balkhash District, Kazakhstan, the increase in the level of aflatoxin was marginal throughout the dataset. The area with the second highest yield was in the North West Badiah District (Jordan) where the EI value indicated that the habitat is generally optimal for the growth of \textit{A. flavus}. While in Balkhash (Kazakhstan), the EI of the species has been in the marginal area over the years.
+
+\begin{figure*}[!ht]
+	\centering
+	\includegraphics[width=16cm]{images/trend.pdf}
+	\caption{Linear trend of EI from the four highest maize yield locations gathered from MapSPAM}
+	\label{fig:Linear trend of EI from the four highest maize yield locations gathered from MapSPAM}
+\end{figure*}
+
+\subsection{Ensemble SDM }
+\subsubsection{Ensemble SDM habitat suitability map}
+
+\begin{figure*}[!ht]
+	\centering
+	\includegraphics[width=\textwidth]{images/ensemble_result.png}
+	\caption{Ensemble SDM of \textit{A. flavus} habitat suitability map, the right bar represented the habitat suitability level}
+	\label{fig:Ensemble SDM output}
+\end{figure*}
+
+I ran an ensemble SDM with the occurrence data of \textit{A. flavus} from the GBIF database \citep{https://doi.org/10.15468/dl.cak6s3} (Figure 7). The model showed an AUC value of 0.858, considered excellent \citep{mandrekar2010receiver}, and a kappa value of 0.685, considered substantial \citep{mchugh2012interrater}. habitat suitability trend were used to evaluate the likelihood of the species in the given area \citep{monnier2023species} was similar to CLIMEX's EI output, and the occurrence in southern Europe were within the suitable margin of the model's output. The occurrence data in the northern European regions did not correlate with high habitat suitability levels. Areas in South America showed a suitability level of approximately 0.6 in east Brazil, while the rest of the upper part of South America showed less habitat suitability level. Additionally, the model showed a higher uncertainty level (Figure 8) in the northern area of Australia and southeast of Africa. 
+
+\begin{figure*}[!ht]
+	\centering
+	\includegraphics[width=\textwidth]{images/uncertainty.png}
+	\caption{Ensemble SDM of \textit{A. flavus} uncertainty map}
+	\label{fig:Ensemble SDM uncertainty}
+\end{figure*}
+
+\subsubsection{Model evaluation}
+
+\begin{table}[!ht]
+    \caption{Ensemble SDM of \textit{A. flavus }performance metrics}
+    \centering
+    \begin{tabular}{lllllll}
+    \hline
+        ~ & ~ & ~ & ~ & ~ & ~ & ~ \\ 
+              Model & AUC  & Kappa & threshold & sensitivity & specificity & proportion correct \\ \\
+        \hline \hline \\
+        GLM    & 0.79 & 0.55  & 0.72      & 0.79        & 0.79        & 0.79               \\
+        SVM    & 0.86 & 0.71  & 0.73      & 0.86        & 0.86        & 0.86               \\
+        ANN    & 0.86 & 0.72  & 0.71      & 0.88        & 0.84        & 0.86               \\
+        MARS   & 0.85 & 0.67  & 0.72      & 0.85        & 0.85        & 0.85               \\
+        RF     & 0.95 & 0.89  & 0.56      & 0.95        & 0.95        & 0.95               \\
+        GAM    & 0.88 & 0.74  & 0.74      & 0.88        & 0.88        & 0.88               \\
+        MAXENT & 0.83 & 0.51  & 0.36      & 0.83        & 0.83        & 0.83               \\
+        ~ & ~ & ~ & ~ & ~ & ~ & ~ \\
+        \hline % Add spacing
+    \end{tabular}
+    \label{Ensemble SDM performance metrics}
+\end{table}
+I extracted the model's evaluation from the ensemble SDM's output (Table 3). AUC values for SVM, ANN, down-weighted MARS, and GAM AUC were considered excellent, while GLM AUC was in an acceptable range and down-sampled RF AUC value was outstanding \citep{mandrekar2010receiver}. Down-sampled RF was considered almost perfect for the kappa values, while SVM, ANN, MARS, and GAM showed substantial agreement, and GLM and MAXENT had moderate agreement \citep{mchugh2012interrater}. GLM performed the poorest amongst all the algorithms, while MAXENT's and RF's thresholds were the two lowest. The other algorithm' thresholds were generally in the same range of 0.71-0.74. Down-sampled RF algorithm showed a high sensitivity, specificity, and proportion correct amongst all the algorithms, while GLM showed the lowest amongst the analytics mentioned.
+
+\subsection{Future distribution in CLIMEX}
+\begin{figure*}[!ht]
+	\centering
+	\includegraphics[width=16cm]{images/MIROC_A1B.pdf}
+	\caption{MIROC-H A1B future projection}
+	\label{fig:MIROC-H A1B future projection}
+\end{figure*}
+
+\begin{figure*}[!ht]
+	\centering
+	\includegraphics[width=16cm]{images/MIROC_A2.pdf}
+	\caption{MIROC-H A2 future projection}
+	\label{fig:MIROC-H A2 future projection}
+\end{figure*}
+\pagebreak
+\begin{figure*}[!ht]
+	\centering
+	\includegraphics[width=16cm]{images/CSIRO_A1B.pdf}
+	\caption{CSIRO-Mk3.0 A1B future projection}
+	\label{fig:CSIRO-Mk3.0 A1B future projection}
+\end{figure*}
+
+\begin{figure*}[!ht]
+	\centering
+	\includegraphics[width=16cm]{images/MIROC_A2.pdf}
+	\caption{CSIRO-Mk3.0 A2 future projection}
+	\label{fig:CSIRO-Mk3.0 A2 future projection}
+\end{figure*}
+\pagebreak
+I mapped the parameters into SRES A1 and A2B scenarios using the MIROC-H and CSIRO Mk3.0 models in CliMond \citep{kriticos2012climond} for 2030, 2050, 2070, and 2100. In the SRES A2 scenarios, the marginal areas for \textit{A. flavus} extended to the northern region of Europe, indicating that regions in Sweden, Norway, and Finland were marginal for the growth of \textit{A. flavus} by 2100. For both A1B and A2 scenarios in the CSIRO Mk3.0 model, the areas where EI values were generated are generally the same from 2030 to 2070. SRES A2 scenarios in 2100 indicated that regions in eastern Russia will be marginal for the growth of \textit{A. flavus}. In Australia, there was a shift in suitability areas; where initially, in 2030, the northern region will be suitable for the production of aflatoxin from the fungus, but the model shifted, and the northwestern regions of Australia will be marginal for aflatoxin in \textit{A. flavus} by 2100 instead.

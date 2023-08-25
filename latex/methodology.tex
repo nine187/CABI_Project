@@ -1,0 +1,152 @@
+\subsection{Climate data}
+For the historical meteorological data, I used CliMond historical dataset to model the suitable ecological niche for \textit{A. flavus}. CliMond climate dataset (CM30\_1995H\_V2) is a 30-year average climatology centered on 1995 \citep{kriticos2012climond}. Additionally, to investigate the changes in ecological niches of \textit{A. flavus} over the years, I used a set of annual meteorological, CRU TS4 weekly data for 1970-2019 with 30' spatial resolution \citep{mitchell2005improved}. 
+
+\subsection{Soil and irrigation data}
+To account for the irrigation scenarios in CLIMEX, I ran the analysis by modifying the amount of rainfall top-up in the model to 2.5 mm per day for 12 months. Additionally, I did not apply irrigation to a specific location if the location contained rainfall equal to or more than 2.5 mm day\textsuperscript{-1}. I used the Global Map of Irrigation Areas (GMIA) version 5.0 to identify significant irrigated areas under irrigation (greater than 10 ha). Then, I resampled the data to match the spatial resolutions of the CRU TS4 spatial resolution dataset. For the 30' cell, if the calculated irrigation was higher than 10 ha, the scenarios were used to create a composite map \citep{siebert2013update}.
+\vspace{\baselineskip} 
+
+
+\subsection{Occurrence data}
+\begin{figure*}[!ht]
+	\centering
+	\includegraphics[width=\textwidth]{images/maize_map.png}
+	\caption{\textit{A. flavus} occurrence map obtained from CABI database and Google Scholar}
+	\label{fig:testimage2}
+\end{figure*}
+
+\begin{figure*}[!ht]
+	\centering
+	\includegraphics[width=\textwidth]{images/aflavus_map.png}
+	\caption{\textit{A. flavus} occurrence map obtained from GBIF}
+	\label{fig:testimage1}
+\end{figure*}
+
+
+
+To identify the presence of aflatoxin produced from \textit{A. flavus} in maize, I gathered the  occurrence data available from the Centre for Agricultural and Bioscience (CABI) database \citep{10.1079/cabicompendium.7432}. Then, I extracted the data from CABI database along with data gathered from an additional literature search for the presence of \textit{A. flavus} in maize using Google Scholar. I used the compiled literature data to map approximate locations of the presence of \textit{A. flavus} in maize (Figure 2). Finally, I exported and mapped the datasets in CLIMEX to validate the parameters of the species.
+\pagebreak \\
+Furthermore, to identify the presence of \textit{A. flavus}, I used the Global Biodiversity Information Facility (GBIF) database to gather the  occurrence data of \textit{A. flavus} (Figure 3). I imported the data points using the rgbif package Version 3.7.7 \citep{rgbif} in RStudio and mapped the presence-only data points using the tmap package Version 3.3-3 \citep{tmap}. For data cleaning of the GBIF database, I used the CoordinateCleaner package version 2.0-20 \citep{coordclean} in RStudio to remove erroneous data points. The package checked for data points with no coordinate, duplicated, poorly geo-referenced data points, and data points near GBIF headquarters. In addition, I exported the data points as a .KML file and visualized the data points on GoogleMap to identify further individual potentially erroneous data points. I used this data to identify the global presence locations of \textit{A. flavus} and performed an ensemble SDM.
+\subsection{Modeling approaches}
+To understand the species distribution range of \textit{A. flavus}, I performed a literature review of the ecological niche of \textit{A. flavus}. As the distribution of \textit{A. flavus} is highly affected by temperature \citep{arrus2005aflatoxin} and moisture  \citep{holmquist1983influence} \citep{diener1987epidemiology} \citep{jaime2010crop}  using methods that were suitable to predict climatic suitability such as CLIMEX was ideal for predicting the distribution of these species. Additionally, to explore the effects of different ecological variables on \textit{A. flavus}, I performed an ensemble SDM using GBIF  occurrence dataset and 40 CliMond bioclimatic variables \citep{kriticos2012climond}. Ensemble model has been shown to have a high predictive performance and was one of the most accurate SDM amongst various algorithms used for SDM \citep{valavi2022predictive}. 
+
+\subsubsection{CLIMEX}
+
+
+In order to define the parameter of the species, I gathered the ecological and biological literature of \textit{A. flavus} and maize to understand its climatic preference. I determined the species optimal temperature, marginal temperature, and temperature, which can cause different ecological stresses. Then, I used the data to construct a parameter defining its temperature and moisture range and indicated the accumulated stress level of the species in maize. CLIMEX calculates the stress level by computing four different stresses: cold stress, dry stress, heat stress, and wet stress into a single Annual Stress Index (SI) (Equation 1) to determine areas where the species is not suitable to live. The SI value alongside the annual growth index \text{GI}\textsubscript{A} (Equation 2) was used to compute a single value of Ecoclimatic Index (EI), which determined the suitability of the area for that given species (Equation 4). EI values ranged from 0-100, where 0-10 indicates marginal suitability, 10-30 indicates that the species can survive, and 30-100 indicates that the species can thrive within the climatic area \citep{byeon2018review}.
+
+\begin{equation}
+SI = \frac{{(1 - CS)}}{{100}} \cdot \frac{{(1 - DS)}}{{100}} \cdot \frac{{(1 - HS)}}{{100}} \cdot \frac{{(1 - WS)}}{{100}}
+\end{equation}
+\\
+SI is the annual stress index while CS, DS, HS, WS are the annual cold, dry, heat, wet stress indices respectively.
+
+\begin{equation}
+    \text{GI}_{A} = 100 \sum_{i=1}^{52} \frac{TGI_{W_i}}{52}
+\end{equation}
+
+ \text{GI}_{A} \text{is the annual growth index}  \
+ \text{TGI}_{W_i} \text{is the total weekly growth index}
+
+\begin{equation}
+    EI = \text{TGI}_{A} * SI
+\end{equation}
+EI is the ecoclimatic index while $\text{TGI}_{A}$  \textnormal{is the annual growth index } \textnormal{and SI is the annual stress index}
+
+\vspace{\baselineskip} \\
+
+I used the "Compare Locations (1 species)" function with the Composite.dx file in CLIMEX to determine the range of \textit{A. flavus} in maize. The "Compare Locations (1 Species)" function uses a monthly extended meteorological database of average variables from different locations. Policymakers often use the function to identify areas susceptible to invasive species or pests \citep{kriticos2015climex}. The function was also helpful in identifying where specific areas of studies could be further conducted (e.g., heat tolerance, optimal moisture level) to understand more about a species \citep{kriticos2015climex}.
+\vspace{\baselineskip} \\
+
+\begin{table}[!ht]
+    \caption{CLIMEX Parameters for \textit{A. flavus} in maize} % Caption with numbering
+    \centering
+    \begin{tabular}{lll}
+        \hline
+        ~ & ~ & ~  \\
+        \textbf{Index} & \textbf{Parameters} & \textbf{Values} \\ 
+        ~ & ~ & ~  \\ \hline\hline
+        ~ & ~ & ~  \\ 
+        Temperature & DV0 & 10°C \\ 
+        ~ & DV1 & 30°C \\ 
+        ~ & DV2 & 35°C \\ 
+        ~ & DV3 & 40°C \\ 
+        Moisture & SM0 & 0.1 \\ 
+        ~ & SM1 & 0.2 \\ 
+        ~ & SM2 & 0.8 \\ 
+        ~ & SM3 & 2 \\ 
+        Cold stress & TTCS & 10°C \\ 
+        ~ & THCS &  -0.00015 week\textsuperscript{-1} \\ 
+        Heat stress & TTHS & 40°C \\ 
+        ~ & THHS & 0.00004 week\textsuperscript{-1} \\ 
+        Dry stress & SMDS & 0.1 \\ 
+        ~ & HDS &  -0.0002 week\textsuperscript{-1} \\ 
+        Wet stress & SMWS & 2 \\ 
+        ~ & HWS & 0.0009 week\textsuperscript{-1} \\ 
+        ~ & ~ & ~  \\ \hline
+    \end{tabular}
+\end{table}
+
+\pagebreak
+To fine-tune the parameters for the species, I used the historical meteorological dataset centered in 1995 alongside the  occurrence. I set the parameters (Table 1) for the pathogen model in this study based on (1) the range temperature and moisture where \textit{A. flavus} are found to produce aflatoxin from academic literature, (2) CABI's distribution map of \textit{A. flavus}, and (3) the advice from my supervisor and experts regarding the parameters. I started by defining the parameters based on previous academic literature, which utilizes CLIMEX in the viable agricultural areas of maize \citep{ramirez2017global} and aflatoxin presence in other crops \citep{haerani2020climate}. Then, I adjusted the temperature and moisture range using the basis range of aflatoxin production from the fungus I found in the literature. For the stress parameters, I adjusted the parameters to incorporate the unsuitable areas from temperature factors by iteratively fitting the parameters with the  occurrence data. I finalized the parameters (Table 1) and used the same parameters to model the species in the Composite Map of 1970-2019 and the future climate scenarios. I ran the parameter sensitivity (Supplementary material 2) function in CLIMEX to determine the effects of each variables on my output. The description of the parameters is as below. 
+
+\textbf{Temperature index} \\ 
+Chauhan et al.,(2015) modeled the aflatoxin risk in maize and found the marginal temperature and production range in maize to be 11.5°C to 42.5°C. The minimal values slightly differed from the study by Liu et al., (2021) which was at 10°C. I used these values as a baseline of the limiting temperature range (DV0 and DV3) and iteratively fit the parameter to acco mmodate the  occurrence data. I set the value of DV0 and DV3 at 10°C  and 40°C, respectively. I also cross-referenced the locations with the CABI database of occurrence to identify areas of \textit{A. flavus} that did not fit within the parameters. For the optimal temperature range (DV1 and DV2), \textit{A. flavus} grew at a higher temperature range compared to its optimum aflatoxin production range \citep{bernaldez2017influence}. The optimum aflatoxin production range was around 25-35°C depending on the water activity level  \citep{chauhan2015improved} \citep{mannaa2017influence} and the specific aflatoxin types (i.e. AFB and AFG) \citep{kumar2021aflatoxin}. I set the values of the optimal temperature (DV1 and DV2) in this study at 30-35°C, which was the range aflatoxin can be produced at 0.95$ a_w $ in Mannaa & Kim (2017) studies and its optimal growth temperature \citep{chuaysrinule2020comparative} \citep{norlia2020modelling}.  
+\vspace{\baselineskip} \\
+The temperature range for which \textit{A. flavus} can optimally grow and produce aflatoxin in different crops was different \citep{norlia2019aspergillus} due to various factors such as availability of the substrate \citep{gilbert2017carbon}, water activity, and temperature \citep{gizachew2019aflatoxin}. Aflatoxins were produced optimally at varying temperature ranges, and moisture \citep{gizachew2019aflatoxin}. I used the 30-35°C range from \citep{mannaa2017influence} studies in CLIMEX's ecological parameter as it is the temperature range where \textit{A. flavus} could occur at all the occurrence data points on the historical dataset and within the temperature range of the aflatoxin risk model in maize \citep{chauhan2015improved}.  
+\vspace{\baselineskip} \\
+\textbf{Moisture index} \\
+CLIMEX uses the criteria to measure moisture by utilizing the percent of soil moisture. For instance, 10 percent of soil moisture would translate to 0.1. For the limiting low moisture (SM0) of the CLIMEX parameters, I set the value at 0.1 moisture level to account for the crop's wilting point as Haerani et al., (2020) CLIMEX's parameter of aflatoxin in peanut. For the optimal lower moisture (SM1) \citep{payne1983effect} suggested that the moisture content of maize grain before maturity is always more than 24 percent. Therefore, I rounded the moisture to 0.2 (personal co mmunication with CLIMEX modeling expert, Darren Kriticos) to use the moisture index with one decimal point and used this as a starting point, then iteratively fitted the data to \textit{A. flavus}  occurrence data in maize. I set the optimal higher moisture (SM2) to be 0.8 as Liu et al., (2020) suggested that the suitable moisture for aflatoxin is around 0.8-0.9. For the limiting high moisture (SM2), I set the value at 2 to accumulate for the Wet Stress, same as Haerani et al., (2020) model.
+\vspace{\baselineskip} \\
+\textbf{Cold stress}
+\\
+To determine areas where cold stress limited the distribution of aflatoxin in maize, I set the cold stress degree day threshold (DTCS) at 10°C, the same value as DV0. Then, I iteratively modified DHCS to -0.00015 week\textsuperscript{-1} to include the area in the southern part of Europe (i.e., Italy, Spain, Serbia), which had recorded the presence of \textit{A. flavus}.  
+\vspace{\baselineskip}  \\
+\textbf{Heat stress}
+\\
+I set the value of the Heat Stress Temperature Threshold (TTHS) to 40°C same as the limiting higher temperature (DV3), and the Heat Stress Temperature Rate (THHS) to 0.0009 week\textsuperscript{-1}; I modified this value from the Haerani et al., (2020) aflatoxin in peanut's model but increased one decimal point as experts  (personal co mmunication with CLIMEX modeling expert, Darren Kriticos) suggested to take into account the heat stress in the northern parts of Africa. 
+\vspace{\baselineskip} \\
+\textbf{Dry stress} 
+\\
+I set the value of the Dry Stress Threshold (SMDS) to 0.1, the same as SM0, and set the Dry Stress Rate at -0.0002 week\textsuperscript{-1} to include the desert areas in the northern part of Africa and the middle part of Australia. 
+\vspace{\baselineskip} \\
+\textbf{Wet stress}
+\\
+For the Wet Stress Threshold (SMWS) and Wet Stress Rate (HWS), I set the value to 2°C and 0.0009 week\textsuperscript{-1}, respectively. The parameters were the same as the value from \citep{haerani2020climate} studies on aflatoxin distribution in peanuts. 
+
+
+\subsubsection{Ensemble SDM}
+Apart from modeling the aflatoxin production from \textit{A. flavus} in maize, I created an ensemble SDM of \textit{A. flavus} using the GBIF  occurrence data to explore the global distribution of the species. Ensemble model is a co mmon approach used in SDM that calculated outcomes from different models and created one output from all the different models \citep{hao2020testing}. The model predicted the habitat suitability of a species in a given area by giving a value from 0-1 \citep{monnier2023species}. To produce an effective SDM, I required the presence and dependable environmental data \citep{barbet2012selecting}. I used the CliMond 40 environmental variables and GBIF  occurrence data to create an ensemble SDM. I used the SSDM Package Version 0.2.8 \citep{SSDM} in RStudio to create an ensemble SDM of the species, the model consisted of seven algorithms (Table 2). I chose the algorithms based on the availability of the SSDM packages . To increase the predictive performance, I downsampled the RF algorithm and down-weighted the MARS algorithm \citep{valavi2022predictive}. Then, I set the methods to pick the pseudo-absence depending on the algorithm \citep{barbet2012selecting}, partitioning 80 percent of the data, and ran ten replications of the model. Furthermore, I set the model's weighting criteria to be the selection matrix's mean. I did not select a threshold, as defining a threshold produced the lowest amount of accuracy in the model \citep{liu2005selecting}.
+\\ 
+\vspace{\baselineskip}
+\vspace{\baselineskip}
+
+\begin{table}[!ht]
+    \caption{Algorithms used in the ensemble SDM}
+    \centering
+    \begin{tabular}{lll}
+        \hline
+        ~ & ~ & ~  \\
+        \textbf{Method} & \textbf{Description} & \textbf{R package used} \\ 
+        ~ & ~ & ~  \\ \hline\hline
+        ~ & ~ & ~  \\ 
+        GLM & generalized linear model & stats \\ 
+        GAM & generalized  addition model & mgcv \\ 
+        RF & random forest (downsampled) & randomForest \\ 
+        SVM & support vector machine & e1071 \\ 
+        ANN & artificial neural network & nnet \\ 
+        MARS & multivariate adaptive regression spline (down-weighted) & earth \\ 
+        MAXENT & maximum entropy & dismo \\ 
+        ~ & ~ & ~  \\ \hline
+    \end{tabular}
+    \label{Ensemble_Model_Algorithms}
+\end{table}
+
+\vspace{\baselineskip}
+
+
+\subsection{Processing analysis}
+
+I used RStudio Version 4.3.1 \citep{RStudio} to analyse the data in this study. After obtaining the parameters from CLIMEX, I ran the irrigated and non-irrigated output of the CLIMEX model with the 1970-2019 meteorological dataset. I extracted the NetCDF files output to RStudio \citep{RStudio} and combined the irrigated and non-irrigated scenarios to create a composite map. Then, I extracted the EI and stress variables from all the years for visualization. To identify global maize agricultural areas, I used the Map Spatial Production Allocation Model (MapSPAM) data of maize yield in 2010 \citep{international2019global} to identify areas where maizes were being grown and extracted the EI values trend from the areas. Additionally, I fitted a linear model of EI across the yearly data (1970-2019) to determine where the trends of changing EI were significant. After that, I calculated the p-values of all the linear trends and masked locations where the p values were more than 0.05 to get a confidence interval of 95 percent. Additionally, I extracted data points at locations with high maize yields and fitted a linear model on the EI values over the years.
+
+\subsection{Future distribution}
+I used two global climate models (GCMs) from the CliMond database \citep{kriticos2012climond}, which were the CSIRO-Mk3.0 (CSIRO, Australia) and MIROC-H (Centre for Climate Research, Japan) models. Then, I ran the model with the CLIMEX's paramters for aflatoxin production from \textit{A. flavus} in maize. The scenarios I used were the Special Report on Emissions Scenarios (SRES) A1B and A2 scenarios indicating specific economic growth that projects different carbon emission levels \citep{scenarios2000ipcc}. The models contained changes in every decade until 2100 \citep{kriticos2012climond}. I used four different years in this study which were 2030, 2050, 2070, and 2100.

@@ -220,7 +220,6 @@ ggplot(data = glinear_model_vis, aes(x = years_glm2, y = EI)) +
   geom_abline(intercept = coef(glinear_model_vis)[1], slope = coef(glinear_model_vis)[2],
               color = "red", linetype = "dashed") +
   labs(title = "Arizona, USA (58812.4T kg/ha)", x = "Years", y = "EI Value") +
-  scale_x_continuous(breaks = seq(0, 50, by = 5), labels = adjust_labels) +
   xlim(1971, 2019) +
   ylim(0, 30) +
   theme(plot.title = element_text(hjust = 0.5)) 

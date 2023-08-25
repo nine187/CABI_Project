@@ -212,6 +212,25 @@ print(eva_visual)
 write.csv(eva_visual, "ensemble_eva")
 #compile all the data in one table
 
+library(ggplot2)
+
+# Create a bar plot for a single row dataframe
+library(ggplot2)
+
+# Create a bar plot for a single row dataframe with variables reordered
+bar_data <- as.data.frame(t(test))
+bar_data$variable <- rownames(bar_data)
+names(bar_data)[1] <- "value"
+
+# Reorder the levels of the variable column
+bar_data$variable <- factor(bar_data$variable, levels = paste0("bioclim_", 1:40))
+
+ggplot(bar_data, aes(x = variable, y = value)) +
+  geom_bar(stat = "identity", fill = "gray") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        axis.title.x = element_blank(), panel.grid = element_blank()) +
+  labs(x = NULL, y = "Value")  # Remove x-axis label, keep y-axis label
+
 #convert data to sf object
 #A.flavus_GBIF <- st_as_sf(A.flavus_GBIF, coords=c('longitude', 'latitude'))
 #sp_points <- do.call("rbind", A.flavus_GBIF)
