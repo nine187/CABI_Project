@@ -1,5 +1,5 @@
 # Modelling of aflatoxin produced by Aspergillus flavus using multimodel approach
-\\
+
 *Author: Pasith Prayoonrat*
 
 *Created: May 2023*
